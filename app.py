@@ -1,37 +1,48 @@
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from datetime import datetime
-import sqlite3
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
 # Initialize the Flask application
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Use environment variable for production
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///joone.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-def get_db():
-    db = sqlite3.connect('joone.db')
-    return db
+# Initialize SQLAlchemy
+db = SQLAlchemy(app)
 
+# Define Models
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    image = db.Column(db.String(200), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    order_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Helper Functions
 def fetch_products():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM products") 
-    products = cursor.fetchall()
-    db.close()
-    return {str(product[0]): {'name': product[1], 'price': product[2], 'image': product[3], 'year': product[4]} for product in products}
+    products = Product.query.all()
+    return {str(product.id): {'name': product.name, 'price': product.price, 'image': product.image, 'year': product.year} for product in products}
 
 @app.route('/')
 def index():
-    products = fetch_products()  # Fetch products from the DB
-    year = request.args.get('year')
-    if year:
-        try:
-            year = int(year)
-        except ValueError:
-            year = None
-    else:
-        year = 2020
-
+    products = fetch_products()
+    year = request.args.get('year', default=2020, type=int)
     current_year = datetime.now().year
     return render_template('index.html', products=products, year=year, current_year=current_year, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
 
@@ -50,29 +61,25 @@ def register():
             flash('Passwords do not match.')
             return redirect(url_for('register'))
 
-        db = get_db()
-        cursor = db.cursor()
-
-        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-        existing_user = cursor.fetchone()
+        existing_user = User.query.filter_by(username=username).first()
 
         if existing_user:
             flash('Username already exists. Please choose a different one.')
             return redirect(url_for('register'))
 
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')  
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        new_user = User(username=username, password=hashed_password)
+
         try:
-            cursor.execute("INSERT INTO users (username, password, is_admin) VALUES (?, ?, 0)", (username, hashed_password))
-            db.commit()
+            db.session.add(new_user)
+            db.session.commit()
             flash('Registration successful! Please log in.')
             return redirect(url_for('login'))
         except Exception as e:
             print(e)
-            db.rollback()
+            db.session.rollback()
             flash('An error occurred during registration.')
             return redirect(url_for('register'))
-        finally:
-            db.close()
 
     return render_template('register.html')
 
@@ -81,21 +88,17 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        db = get_db()
-        cursor = db.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-        user = cursor.fetchone()
-        db.close()
+        user = User.query.filter_by(username=username).first()
 
-        if user and check_password_hash(user[2], password):
-            session['user_id'] = user[0]
-            session['username'] = user[1]
-            session['is_admin'] = user[3]  
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            session['username'] = user.username
+            session['is_admin'] = user.is_admin
             flash('Login successful!')
             return redirect(url_for('index'))
-        else:
-            flash('Invalid username or password.')
+
+        flash('Invalid username or password.')
 
     return render_template('login.html')
 
@@ -103,7 +106,7 @@ def login():
 def logout():
     session.pop('user_id', None)
     session.pop('username', None)
-    session.pop('is_admin', None)  
+    session.pop('is_admin', None)
     flash('Logged out successfully!')
     return redirect(url_for('index'))
 
@@ -141,11 +144,9 @@ def cart():
 
 @app.route('/product/<id>')
 def product(id):
-    product = fetch_products().get(id)
+    product = Product.query.get(id)
     if product:
-        print(f"Image path being used: {product['image']}")  # Debug print
-        image_path = url_for('static', filename=product['image'])
-        print(f"Full image URL: {image_path}")  # Debug print
+        image_path = url_for('static', filename=product.image)
         return render_template('product.html', product=product, id=id)
     return "Product not found", 404
 
@@ -155,7 +156,7 @@ def add_product():
         flash('You must be logged in to add products.')
         return redirect(url_for('login'))
 
-    if not session.get('is_admin'):  
+    if not session.get('is_admin'):
         flash('You do not have permission to add products.')
         return redirect(url_for('index'))
 
@@ -165,25 +166,22 @@ def add_product():
         image = request.form['image']
         year = request.form['year']
 
-        # Strip 'static/' from the beginning of the image path if it exists
         if image.startswith('static/'):
-            image = image[7:]  # Remove first 7 characters ('static/')
+            image = image[7:]
 
         if not name or not price or not image or not year:
             flash('Please fill in all fields.')
             return redirect(url_for('add_product'))
 
         try:
-            db = get_db()
-            cursor = db.cursor()
-            cursor.execute("INSERT INTO products (name, price, image, year) VALUES (?, ?, ?, ?)", 
-                           (name, float(price), image, int(year)))
-            db.commit()
+            new_product = Product(name=name, price=float(price), image=image, year=int(year))
+            db.session.add(new_product)
+            db.session.commit()
             flash('Product added successfully!')
             return redirect(url_for('index'))
-
         except Exception as e:
             print(e)
+            db.session.rollback()
             flash('An error occurred while adding the product.')
             return redirect(url_for('add_product'))
 
@@ -208,38 +206,34 @@ def edit_product(id):
         flash('You do not have permission to edit products.')
         return redirect(url_for('index'))
 
-    db = get_db()
-    cursor = db.cursor()
-
+    product = Product.query.get(id)
     if request.method == 'POST':
         name = request.form['name']
         price = request.form['price']
         image = request.form['image']
         year = request.form['year']
 
-        # Strip 'static/' from the beginning of the image path if it exists
         if image.startswith('static/'):
-            image = image[7:]  # Remove first 7 characters ('static/')
+            image = image[7:]
 
         if not name or not price or not image or not year:
             flash('Please fill in all fields.')
             return redirect(url_for('edit_product', id=id))
 
         try:
-            cursor.execute("UPDATE products SET name = ?, price = ?, image = ?, year = ? WHERE id = ?", 
-                           (name, float(price), image, int(year), id))
-            db.commit()
+            product.name = name
+            product.price = float(price)
+            product.image = image
+            product.year = int(year)
+            db.session.commit()
             flash('Product details updated successfully!')
             return redirect(url_for('manage_products'))
         except Exception as e:
             print(e)
+            db.session.rollback()
             flash('An error occurred while updating the product.')
             return redirect(url_for('edit_product', id=id))
     else:
-        cursor.execute("SELECT * FROM products WHERE id = ?", (id,))
-        product = cursor.fetchone()
-        db.close()
-        
         if product:
             return render_template('edit_product.html', product=product)
         else:
@@ -253,39 +247,29 @@ def profile():
         flash('You must be logged in to access your profile.')
         return redirect(url_for('login'))
 
-    db = get_db()
+    user = User.query.get(user_id)
     
     if request.method == 'POST':
         username = request.form['username']
-        new_password = request.form['new_password']
-        confirm_password = request.form['confirm_password']
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
 
         if new_password and new_password != confirm_password:
             flash('Passwords do not match. Please try again.')
             return redirect(url_for('profile'))
 
-        cursor = db.cursor()
         try:
+            user.username = username
             if new_password:
-                hashed_password = generate_password_hash(new_password, method='pbkdf2:sha256')
-                cursor.execute("UPDATE users SET username = ?, password = ? WHERE id = ?", (username, hashed_password, user_id))
-            else:
-                cursor.execute("UPDATE users SET username = ? WHERE id = ?", (username, user_id))
-
-            db.commit()
+                user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
+            db.session.commit()
             flash('Profile updated successfully!')
             return redirect(url_for('profile'))
-
         except Exception as e:
             print(e)
-            db.rollback()
+            db.session.rollback()
             flash('An error occurred while updating the profile.')
             return redirect(url_for('profile'))
-    
-    cursor = db.cursor()
-    cursor.execute("SELECT username FROM users WHERE id = ?", (user_id,))
-    user = cursor.fetchone()
-    db.close()
 
     return render_template('profile.html', user=user)
 
@@ -296,11 +280,13 @@ def order_history():
         flash('You must be logged in to view your order history.')
         return redirect(url_for('login'))
 
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT orders.id, products.name, orders.quantity, orders.order_date FROM orders JOIN products ON orders.product_id = products.id WHERE orders.user_id = ?", (user_id,))
-    orders = cursor.fetchall()
-    db.close()
+    user_orders = Order.query.filter_by(user_id=user_id).all()
+    orders = [{
+        'id': order.id,
+        'product_name': Product.query.get(order.product_id).name,
+        'quantity': order.quantity,
+        'order_date': order.order_date
+    } for order in user_orders]
 
     return render_template('order_history.html', orders=orders)
 
@@ -318,21 +304,16 @@ def users():
         flash('You do not have permission to manage users.')
         return redirect(url_for('index'))
 
-    db = get_db()
-    cursor = db.cursor()
-    
     if request.method == 'POST':
         user_id = request.form['user_id']
-        is_admin = request.form['is_admin']
-        cursor.execute("UPDATE users SET is_admin = ? WHERE id = ?", (is_admin, user_id))
-        db.commit()
+        is_admin = request.form['is_admin'] == 'True'
+        user = User.query.get(user_id)
+        user.is_admin = is_admin
+        db.session.commit()
         flash('User updated successfully.')
-    
-    cursor.execute("SELECT * FROM users")
-    users = cursor.fetchall()
-    db.close()
 
-    return render_template('users.html', users=users)
+    users_list = User.query.all()
+    return render_template('users.html', users=users_list)
 
 @app.route('/change_admin_password', methods=['GET', 'POST'])
 def change_admin_password():
@@ -349,15 +330,11 @@ def change_admin_password():
             flash('New passwords do not match.')
             return redirect(url_for('change_admin_password'))
 
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = ?", (session['user_id'],))
-        user = cursor.fetchone()
+        admin_user = User.query.get(session['user_id'])
 
-        if user and check_password_hash(user[2], current_password):
-            hashed_password = generate_password_hash(new_password, method='pbkdf2:sha256')
-            cursor.execute("UPDATE users SET password = ? WHERE id = ?", (hashed_password, user[0]))
-            db.commit()
+        if admin_user and check_password_hash(admin_user.password, current_password):
+            admin_user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
+            db.session.commit()
             flash('Password changed successfully!')
             return redirect(url_for('admin_dashboard'))
         else:
