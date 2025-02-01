@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Admin Dashboard</h2>
+    
+    <div class="dashboard">
+        <h3>Manage Products</h3>
+        <ul>
+            <li><a href="{{ url_for('add_product') }}">Add New Product</a></li>
+            <li><a href="{{ url_for('manage_products') }}">View All Products</a></li>
+        </ul>
+
+        <h3>Manage Users</h3>
+        <ul>
+            <li><a href="{{ url_for('users') }}">View All Users</a></li>
+        </ul>
+
+        <h3>Admin Settings</h3>
+        <ul>
+            <li><a href="{{ url_for('change_admin_password') }}">Change Password</a></li>
+        </ul>
+    </div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Edit Product</h2>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="form-container">
+        <form method="POST">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" value="{{ product[1] }}" required>
+            <label for="price">Price:</label>
+            <input type="number" name="price" id="price" step="0.01" value="{{ product[2] }}" required>
+            <label for="image">Image:</label>
+            <input type="text" name="image" id="image" value="{{ product[3] }}" required>
+            <label for="year">Year:</label>
+            <input type="number" name="year" id="year" value="{{ product[4] }}" required>
+            <button type="submit">Update Product</button>
+        </form>
+        <a href="{{ url_for('manage_products') }}">Cancel</a>
+    </div>
+{% endblock %}
