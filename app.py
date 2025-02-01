@@ -6,7 +6,7 @@ import os
 
 # Initialize the Flask application
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Make sure to set this in your environment for production
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///joone.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -62,13 +62,11 @@ def register():
             return redirect(url_for('register'))
 
         existing_user = User.query.filter_by(username=username).first()
-
         if existing_user:
             flash('Username already exists. Please choose a different one.')
             return redirect(url_for('register'))
 
         is_first_user_admin = User.query.filter_by(is_admin=True).count() == 0
-
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         new_user = User(username=username, password=hashed_password, is_admin=is_first_user_admin)
 
@@ -92,7 +90,6 @@ def login():
         password = request.form['password']
 
         user = User.query.filter_by(username=username).first()
-        
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
             session['username'] = user.username
@@ -148,7 +145,6 @@ def cart():
 def product(id):
     product = Product.query.get(id)
     if product:
-        image_path = url_for('static', filename=product.image)
         return render_template('product.html', product=product, id=id)
     return "Product not found", 404
 
@@ -189,7 +185,7 @@ def add_product():
 
     return render_template('add_product.html')
 
-@app.route('/manage_products', methods=['GET'])
+@app.route('/manage_products')
 def manage_products():
     if not session.get('is_admin'):
         flash('You do not have permission to manage products.')
@@ -324,8 +320,6 @@ def manage_users():
             flash(f'User {action}d successfully.')
 
     users_list = User.query.all()
-    print(users_list)  # Debug statement to verify data
-
     return render_template('manage_users.html', users=users_list)
 
 @app.route('/users', methods=['GET'])
