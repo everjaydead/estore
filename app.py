@@ -294,7 +294,7 @@ def order_history():
 
     return render_template('order_history.html', orders=orders)
 
-@app.route('/admin_dashboard', methods=['GET'])
+@app.route('/admin_dashboard')
 def admin_dashboard():
     if not session.get('is_admin'):
         flash('You do not have permission to access this page.')
@@ -302,22 +302,29 @@ def admin_dashboard():
     
     return render_template('admin_dashboard.html')
 
-@app.route('/users', methods=['GET', 'POST'])
-def users():
+@app.route('/manage_users', methods=['GET', 'POST'])
+def manage_users():
     if not session.get('is_admin'):
         flash('You do not have permission to manage users.')
         return redirect(url_for('index'))
 
     if request.method == 'POST':
         user_id = request.form['user_id']
-        is_admin = request.form['is_admin'] == 'True'
-        user = User.query.get(user_id)
-        user.is_admin = is_admin
-        db.session.commit()
-        flash('User updated successfully.')
+        action = request.form['action']
 
+        user = User.query.get(user_id)
+        if not user:
+            flash('User not found.')
+        else:
+            if action == 'promote':
+                user.is_admin = True
+            elif action == 'demote':
+                user.is_admin = False
+            db.session.commit()
+            flash('User updated successfully.')
+    
     users_list = User.query.all()
-    return render_template('users.html', users=users_list)
+    return render_template('manage_users.html', users=users_list)
 
 @app.route('/change_admin_password', methods=['GET', 'POST'])
 def change_admin_password():
