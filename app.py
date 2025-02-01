@@ -6,7 +6,7 @@ import os
 
 # Initialize the Flask application
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Use environment variable for production
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///joone.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -67,10 +67,8 @@ def register():
             flash('Username already exists. Please choose a different one.')
             return redirect(url_for('register'))
 
-        # Check if any admin exists
         is_first_user_admin = User.query.filter_by(is_admin=True).count() == 0
 
-        # Create new user with admin rights if the first
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         new_user = User(username=username, password=hashed_password, is_admin=is_first_user_admin)
 
@@ -320,9 +318,11 @@ def manage_users():
                 user.is_admin = True
             elif action == 'demote':
                 user.is_admin = False
+            elif action == 'delete':
+                db.session.delete(user)
             db.session.commit()
-            flash('User updated successfully.')
-    
+            flash(f'User {action}d successfully.')
+
     users_list = User.query.all()
     return render_template('manage_users.html', users=users_list)
 
