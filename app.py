@@ -47,14 +47,13 @@ def index():
     return render_template('index.html', products=products, year=year, current_year=current_year, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
 
 @app.route('/product/<id>')
-def product(id):
+def view_product(id):  # Renamed to prevent conflicts
     product = Product.query.get(id)
     if product:
         image_path = url_for('static', filename=product.image)
         return render_template('product.html', product=product, image_url=image_path)
     return "Product not found", 404
 
-# Rest of the code...
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -149,13 +148,6 @@ def cart():
             })
             total_price += item_total
     return render_template('cart.html', cart_items=cart_items, total_price=total_price)
-
-@app.route('/product/<id>')
-def product(id):
-    product = Product.query.get(id)
-    if product:
-        return render_template('product.html', product=product, id=id)
-    return "Product not found", 404
 
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
