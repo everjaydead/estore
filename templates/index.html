@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Products</h2>
+
+    <div class="products">
+        {% for id, product in products.items() %}
+            <div class="product" data-year="{{ product.year }}">
+                <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}" width="150">
+                <h3>{{ product.name }}</h3>
+                <p>${{ product.price }}</p>
+                <a href="{{ url_for('product', id=id) }}">View Details</a>
+                <a href="{{ url_for('add_to_cart', id=id) }}">Add to Cart</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="year-filter">
+        <label for="year-slider">Year:</label>
+        <input type="range" id="year-slider" name="year" min="2020" max="2024" value="{{ year if year is not none else 2020 }}" step="1">
+        <span id="year-value">{{ year if year is not none else 2020 }}</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSlider = document.getElementById('year-slider');
+            const yearValue = document.getElementById('year-value');
+            const products = document.querySelectorAll('.product');
+
+            function filterProducts(selectedYear) {
+                products.forEach(product => {
+                    const productYear = parseInt(product.dataset.year);
+                    if (selectedYear === 0 || productYear === selectedYear) {
+                        product.style.display = 'block';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                });
+
+                const url = new URL(window.location.href);
+                if (selectedYear === 0) {
+                    url.searchParams.delete('year');
+                } else {
+                    url.searchParams.set('year', selectedYear);
+                }
+                window.history.replaceState(null, null, url.toString());
+            }
+
+            const initialYear = {{ year if year is not none else 2020 }};
+            yearSlider.value = initialYear;
+            yearValue.textContent = initialYear;
+            filterProducts(initialYear);
+
+            yearSlider.addEventListener('input', function() {
+                const selectedYear = parseInt(this.value);
+                yearValue.textContent = selectedYear;
+                filterProducts(selectedYear);
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block footer %}
+    <p>&copy; {{ current_year }} IYF | J00NE Interactive LTD.</p>
+{% endblock %}
