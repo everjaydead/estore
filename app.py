@@ -6,7 +6,7 @@ import os
 
 # Initialize the Flask application
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Make sure to set this in your environment for production
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///joone.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -24,7 +24,7 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Float, nullable=False)
-    image = db.Column(db.String(200), nullable=False)
+    image = db.Column(db.String(200), nullable=False)  # Ensure this points to the correct path
     year = db.Column(db.Integer, nullable=False)
 
 class Order(db.Model):
@@ -46,6 +46,15 @@ def index():
     current_year = datetime.now().year
     return render_template('index.html', products=products, year=year, current_year=current_year, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
 
+@app.route('/product/<id>')
+def product(id):
+    product = Product.query.get(id)
+    if product:
+        image_path = url_for('static', filename=product.image)
+        return render_template('product.html', product=product, image_url=image_path)
+    return "Product not found", 404
+
+# Rest of the code...
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
