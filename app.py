@@ -67,8 +67,12 @@ def register():
             flash('Username already exists. Please choose a different one.')
             return redirect(url_for('register'))
 
+        # Check if any admin exists
+        is_first_user_admin = User.query.filter_by(is_admin=True).count() == 0
+
+        # Create new user with admin rights if the first
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, password=hashed_password)
+        new_user = User(username=username, password=hashed_password, is_admin=is_first_user_admin)
 
         try:
             db.session.add(new_user)
@@ -90,7 +94,7 @@ def login():
         password = request.form['password']
 
         user = User.query.filter_by(username=username).first()
-
+        
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
             session['username'] = user.username
