@@ -324,6 +324,8 @@ def manage_users():
             flash(f'User {action}d successfully.')
 
     users_list = User.query.all()
+    print(users_list)  # Debug statement to verify data
+
     return render_template('manage_users.html', users=users_list)
 
 @app.route('/users', methods=['GET'])
