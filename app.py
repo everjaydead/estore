@@ -9,11 +9,11 @@ DATABASE_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'joone.
 
 # Initialize the Flask application
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Ensure your secret key is set for session management
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'  # Define the database URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize SQLAlchemy
+# Initialize SQLAlchemy for ORM
 db = SQLAlchemy(app)
 
 # Define Models
@@ -39,18 +39,19 @@ class Order(db.Model):
 
 # Helper Functions
 def fetch_products():
+    """Fetch all products from the database"""
     products = Product.query.all()
     return {str(product.id): {'name': product.name, 'price': product.price, 'image': product.image, 'year': product.year} for product in products}
 
 @app.route('/')
 def index():
+    """Render the homepage with a list of products"""
     products = fetch_products()
-    year = request.args.get('year', default=2020, type=int)
-    current_year = datetime.now().year
-    return render_template('index.html', products=products, year=year, current_year=current_year, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
+    return render_template('index.html', products=products, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
 
 @app.route('/product/<id>')
 def view_product(id):
+    """Render a page to view a specific product"""
     product = Product.query.get(id)
     if product:
         image_path = url_for('static', filename=product.image)
@@ -59,6 +60,7 @@ def view_product(id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Handle user registration"""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -96,6 +98,7 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Handle user login"""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -114,6 +117,7 @@ def login():
 
 @app.route('/logout')
 def logout():
+    """Log out the user"""
     session.pop('user_id', None)
     session.pop('username', None)
     session.pop('is_admin', None)
@@ -122,6 +126,7 @@ def logout():
 
 @app.route('/add_to_cart/<id>')
 def add_to_cart(id):
+    """Add a product to the shopping cart"""
     if not session.get('user_id'):
         flash("You must be logged in to add items to your cart.")
         return redirect(url_for('login'))
@@ -135,6 +140,7 @@ def add_to_cart(id):
 
 @app.route('/cart')
 def cart():
+    """Show the contents of the shopping cart"""
     cart = session.get('cart', {})
     cart_items = []
     total_price = 0
@@ -154,6 +160,7 @@ def cart():
 
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
+    """Allow admins to add a new product"""
     if not session.get('user_id'):
         flash('You must be logged in to add products.')
         return redirect(url_for('login'))
@@ -191,6 +198,7 @@ def add_product():
 
 @app.route('/manage_products')
 def manage_products():
+    """List and manage all products (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to manage products.')
         return redirect(url_for('index'))
@@ -200,6 +208,7 @@ def manage_products():
 
 @app.route('/edit_product/<int:id>', methods=['GET', 'POST'])
 def edit_product(id):
+    """Edit a specific product"""
     if not session.get('user_id'):
         flash('You must be logged in to edit products.')
         return redirect(url_for('login'))
@@ -244,6 +253,7 @@ def edit_product(id):
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
+    """Update user profile information"""
     user_id = session.get('user_id')
     if not user_id:
         flash('You must be logged in to access your profile.')
@@ -277,16 +287,25 @@ def profile():
 
 @app.route('/order_history')
 def order_history():
+    """View the logged-in user's order history"""
     user_id = session.get('user_id')
     if not user_id:
         flash('You must be logged in to view your order history.')
         return redirect(url_for('login'))
 
-    orders = Order.query.filter_by(user_id=user_id).all()
+    user_orders = Order.query.filter_by(user_id=user_id).all()
+    orders = [{
+        'id': order.id,
+        'product_name': Product.query.get(order.product_id).name,
+        'quantity': order.quantity,
+        'order_date': order.order_date
+    } for order in user_orders]
+
     return render_template('order_history.html', orders=orders)
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
+    """Dashboard view for admins"""
     if not session.get('is_admin'):
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
@@ -295,37 +314,34 @@ def admin_dashboard():
 
 @app.route('/manage_users', methods=['GET', 'POST'])
 def manage_users():
+    """Manage user roles and access (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to manage users.')
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        user_id = request.form.get('user_id')
-        action = request.form.get('action')
-
+        user_id = request.form['user_id']
+        action = request.form['action']
         user = User.query.get(user_id)
 
-        if not user:
-            flash('User not found.')
-        else:
+        if user:
             if action == 'promote':
                 user.is_admin = True
             elif action == 'demote':
                 user.is_admin = False
             elif action == 'delete':
                 db.session.delete(user)
-            elif action == 'edit':
-                new_username = request.form.get('username')
-                user.username = new_username
             db.session.commit()
-            flash('User updated successfully.')
+            flash(f'User {action}d successfully.')
+        else:
+            flash('User not found.')
 
-    # Fetch users data from the database
     users_list = User.query.all()
     return render_template('manage_users.html', users=users_list)
 
 @app.route('/edit_user/<int:id>', methods=['GET', 'POST'])
 def edit_user(id):
+    """Edit a user's information (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to manage users.')
         return redirect(url_for('index'))
@@ -340,17 +356,9 @@ def edit_user(id):
             return redirect(url_for('manage_users'))
     return render_template('edit_user.html', user=user)
 
-@app.route('/users', methods=['GET'])
-def users():
-    if not session.get('is_admin'):
-        flash('You do not have permission to access the users list.')
-        return redirect(url_for('index'))
-    
-    users_list = User.query.all()
-    return render_template('users.html', users=users_list)
-
 @app.route('/change_admin_password', methods=['GET', 'POST'])
 def change_admin_password():
+    """Allows admin users to change their passwords"""
     if not session.get('is_admin'):
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
@@ -377,6 +385,7 @@ def change_admin_password():
         
     return render_template('change_admin_password.html')
 
+# Run the application
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
