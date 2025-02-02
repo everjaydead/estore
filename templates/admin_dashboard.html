@@ -1,23 +1,64 @@
 {% extends "base.html" %}
 
+{% block title %}Admin Dashboard - J00NE{% endblock %}
+
 {% block content %}
-    <h2>Admin Dashboard</h2>
-    
-    <div class="dashboard">
-        <h3>Manage Products</h3>
-        <ul>
-            <li><a href="{{ url_for('add_product') }}">Add New Product</a></li>
-            <li><a href="{{ url_for('manage_products') }}">View All Products</a></li>
-        </ul>
-
-        <h3>Manage Users</h3>
-        <ul>
-            <li><a href="{{ url_for('users') }}">View All Users</a></li>
-        </ul>
-
-        <h3>Admin Settings</h3>
-        <ul>
-            <li><a href="{{ url_for('change_admin_password') }}">Change Password</a></li>
-        </ul>
+<div class="container mt-4">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    <div class="row">
+        <!-- Total Users Card -->
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <p class="card-text">{{ admin_data.total_users }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Products Card -->
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Products</h5>
+                    <p class="card-text">{{ admin_data.total_products }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Orders Card -->
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Orders</h5>
+                    <p class="card-text">{{ admin_data.recent_orders | length }}</p>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <h3 class="mt-4">Recent Orders</h3>
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Order ID</th>
+                <th>User ID</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Order Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in admin_data.recent_orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.user_id }}</td>
+                <td>{{ Product.query.get(order.product_id).name }}</td>
+                <td>{{ order.quantity }}</td>
+                <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
