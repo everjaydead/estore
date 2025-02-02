@@ -282,14 +282,7 @@ def order_history():
         flash('You must be logged in to view your order history.')
         return redirect(url_for('login'))
 
-    user_orders = Order.query.filter_by(user_id=user_id).all()
-    orders = [{
-        'id': order.id,
-        'product_name': Product.query.get(order.product_id).name,
-        'quantity': order.quantity,
-        'order_date': order.order_date
-    } for order in user_orders]
-
+    orders = Order.query.filter_by(user_id=user_id).all()
     return render_template('order_history.html', orders=orders)
 
 @app.route('/admin_dashboard')
@@ -307,10 +300,11 @@ def manage_users():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        user_id = request.form['user_id']
-        action = request.form['action']
+        user_id = request.form.get('user_id')
+        action = request.form.get('action')
 
         user = User.query.get(user_id)
+
         if not user:
             flash('User not found.')
         else:
@@ -320,20 +314,30 @@ def manage_users():
                 user.is_admin = False
             elif action == 'delete':
                 db.session.delete(user)
+            elif action == 'edit':
+                new_username = request.form.get('username')
+                user.username = new_username
             db.session.commit()
-            flash(f'User {action}d successfully.')
-
+            flash('User updated successfully.')
+    
     users_list = User.query.all()
     return render_template('manage_users.html', users=users_list)
 
-@app.route('/users', methods=['GET'])
-def users():
+@app.route('/edit_user/<int:id>', methods=['GET', 'POST'])
+def edit_user(id):
     if not session.get('is_admin'):
-        flash('You do not have permission to access the users list.')
+        flash('You do not have permission to manage users.')
         return redirect(url_for('index'))
-    
-    users_list = User.query.all()
-    return render_template('users.html', users=users_list)
+
+    user = User.query.get(id)
+    if request.method == 'POST':
+        new_username = request.form['username']
+        if user:
+            user.username = new_username
+            db.session.commit()
+            flash('User information updated successfully!')
+            return redirect(url_for('manage_users'))
+    return render_template('edit_user.html', user=user)
 
 @app.route('/change_admin_password', methods=['GET', 'POST'])
 def change_admin_password():
@@ -360,10 +364,10 @@ def change_admin_password():
         else:
             flash('Current password is incorrect.')
             return redirect(url_for('change_admin_password'))
-
+        
     return render_template('change_admin_password.html')
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Ensures the database tables are created initially
+        db.create_all()
     app.run(debug=True)

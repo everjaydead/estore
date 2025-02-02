@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit User: {{ user.username }}</h2>
+<form method="post" action="{{ url_for('edit_user', id=user.id) }}">
+    <label for="username">New Username:</label>
+    <input type="text" name="username" value="{{ user.username }}" required>
+    <button type="submit">Update</button>
+</form>
+{% endblock %}
