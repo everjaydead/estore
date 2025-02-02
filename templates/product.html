@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-6">
-        <img src="{{ image_url }}" class="img-fluid" alt="{{ product.name }}">
+        <img src="{{ url_for('static', filename=product.image) }}" class="img-fluid" alt="{{ product.name }}">
     </div>
     <div class="col-lg-6">
         <h2>{{ product.name }}</h2>
