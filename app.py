@@ -319,7 +319,8 @@ def manage_users():
                 user.username = new_username
             db.session.commit()
             flash('User updated successfully.')
-    
+
+    # Fetch users data from the database
     users_list = User.query.all()
     return render_template('manage_users.html', users=users_list)
 
