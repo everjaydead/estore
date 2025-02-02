@@ -4,8 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
-# Constants for file paths
-DATABASE_PATH = "/absolute/path/to/joone.db"  # Ensure this path correctly points to your desired database location
+# Define the absolute path to the database
+DATABASE_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'joone.db')
 
 # Initialize the Flask application
 app = Flask(__name__)
