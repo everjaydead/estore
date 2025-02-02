@@ -339,6 +339,15 @@ def edit_user(id):
             return redirect(url_for('manage_users'))
     return render_template('edit_user.html', user=user)
 
+@app.route('/users', methods=['GET'])
+def users():
+    if not session.get('is_admin'):
+        flash('You do not have permission to access the users list.')
+        return redirect(url_for('index'))
+    
+    users_list = User.query.all()
+    return render_template('users.html', users=users_list)
+
 @app.route('/change_admin_password', methods=['GET', 'POST'])
 def change_admin_password():
     if not session.get('is_admin'):
