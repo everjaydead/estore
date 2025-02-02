@@ -16,6 +16,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Initialize SQLAlchemy for ORM
 db = SQLAlchemy(app)
 
+# Context processor to add current year globally
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.now().year}
+
+
 # Define Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
