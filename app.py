@@ -16,12 +16,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Initialize SQLAlchemy for ORM
 db = SQLAlchemy(app)
 
-# Context processor to add current year globally
-@app.context_processor
-def inject_current_year():
-    return {'current_year': datetime.now().year}
-
-
 # Define Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,6 +42,8 @@ def fetch_products():
     """Fetch all products from the database"""
     products = Product.query.all()
     return {str(product.id): {'name': product.name, 'price': product.price, 'image': product.image, 'year': product.year} for product in products}
+
+# Routes
 
 @app.route('/')
 def index():
@@ -256,6 +252,27 @@ def edit_product(id):
         else:
             flash('Product not found.')
             return redirect(url_for('manage_products'))
+
+@app.route('/delete_product/<int:id>', methods=['POST'])
+def delete_product(id):
+    """Handle product deletion (admin only)"""
+    if not session.get('is_admin'):
+        flash('You do not have permission to delete products.')
+        return redirect(url_for('index'))
+
+    product = Product.query.get(id)
+    if product:
+        try:
+            db.session.delete(product)
+            db.session.commit()
+            flash('Product successfully deleted.')
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while deleting the product.')
+    else:
+        flash('Product not found.')
+    
+    return redirect(url_for('manage_products'))
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
