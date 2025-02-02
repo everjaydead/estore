@@ -4,13 +4,13 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
-# Define the absolute path to the database
+# Define the path to the database
 DATABASE_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'joone.db')
 
 # Initialize the Flask application
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Ensure your secret key is set for session management
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'  # Define the database URI
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Make sure to set this in your environment
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'  # SQLite database path
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy for ORM
@@ -310,7 +310,12 @@ def admin_dashboard():
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
     
-    return render_template('admin_dashboard.html')
+    admin_data = {
+        'total_users': User.query.count(),
+        'total_products': Product.query.count(),
+        'recent_orders': Order.query.order_by(Order.order_date.desc()).limit(10).all()
+    }
+    return render_template('admin_dashboard.html', admin_data=admin_data)
 
 @app.route('/manage_users', methods=['GET', 'POST'])
 def manage_users():
@@ -388,5 +393,5 @@ def change_admin_password():
 # Run the application
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        db.create_all()  # Ensures all tables are created based on model definitions
     app.run(debug=True)
