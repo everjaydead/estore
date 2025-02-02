@@ -24,7 +24,7 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Float, nullable=False)
-    image = db.Column(db.String(200), nullable=False)  # Ensure this points to the correct path
+    image = db.Column(db.String(200), nullable=False)
     year = db.Column(db.Integer, nullable=False)
 
 class Order(db.Model):
@@ -47,7 +47,7 @@ def index():
     return render_template('index.html', products=products, year=year, current_year=current_year, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
 
 @app.route('/product/<id>')
-def view_product(id):  # Renamed to prevent conflicts
+def view_product(id):
     product = Product.query.get(id)
     if product:
         image_path = url_for('static', filename=product.image)
