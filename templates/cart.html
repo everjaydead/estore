@@ -9,19 +9,25 @@
     <table class="table table-striped table-bordered">
         <thead class="thead-dark">
             <tr>
-                <th>Name</th>
+                <th>Product</th>
                 <th>Price</th>
                 <th>Quantity</th>
                 <th>Total</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for item in cart_items %}
             <tr>
-                <td>{{ item.name }}</td>
-                <td>${{ item.price }}</td>
+                <td>{{ item.product.name }}</td>
+                <td>${{ item.product.price }}</td>
                 <td>{{ item.quantity }}</td>
                 <td>${{ item.total }}</td>
+                <td>
+                    <form action="{{ url_for('save_for_later', product_id=item.product.id) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-warning btn-sm">Save for Later</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
             <tr>
@@ -33,6 +39,39 @@
     <a href="#" class="btn btn-success mt-3">Proceed to Checkout</a>
     {% else %}
     <p>Your cart is empty!</p>
+    {% endif %}
+
+    <!-- Saved for Later Items -->
+    <h3>Saved for Later</h3>
+    {% if saved_items %}
+    <ul>
+        {% for saved in saved_items %}
+        <li>{{ saved.product.name }} - ${{ saved.product.price }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No items saved for later.</p>
+    {% endif %}
+
+    <!-- Recommendations Based on Cart -->
+    <h3>Recommended Products</h3>
+    {% if recommendations %}
+    <div class="row">
+        {% for product in recommendations %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">Price: ${{ product.price }}</p>
+                    <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No recommendations at this time.</p>
     {% endif %}
 </div>
 {% endblock %}
