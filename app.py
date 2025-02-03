@@ -28,6 +28,7 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     wishlist = db.relationship('Product', secondary=wishlist_items, back_populates='wishlisted_by')
+    saved_items = db.relationship('SavedForLater', back_populates='user')
     reviews = db.relationship('Review', cascade='all,delete-orphan', back_populates='user')
 
 class Product(db.Model):
@@ -37,6 +38,7 @@ class Product(db.Model):
     image = db.Column(db.String(200), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     wishlisted_by = db.relationship('User', secondary=wishlist_items, back_populates='wishlist')
+    saved_for_later_by = db.relationship('SavedForLater', back_populates='product')
     reviews = db.relationship('Review', order_by='Review.id', back_populates='product')
 
 class Order(db.Model):
@@ -55,6 +57,14 @@ class Review(db.Model):
     review_date = db.Column(db.DateTime, default=datetime.utcnow)
     product = db.relationship('Product', back_populates='reviews')
     user = db.relationship('User', back_populates='reviews')
+
+class SavedForLater(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    date_saved = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', back_populates='saved_items')
+    product = db.relationship('Product', back_populates='saved_for_later_by')
 
 # Helper Functions
 def fetch_products():
@@ -166,22 +176,58 @@ def add_to_cart(id):
 @app.route('/cart')
 def cart():
     """Show the contents of the shopping cart"""
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('You must be logged in to view your cart.')
+        return redirect(url_for('login'))
+
+    # Retrieve cart items
     cart = session.get('cart', {})
     cart_items = []
     total_price = 0
     for id, quantity in cart.items():
-        product = fetch_products().get(id)
+        product = Product.query.get(id)
         if product:
-            item_total = product['price'] * quantity
+            item_total = product.price * quantity
             cart_items.append({
                 'id': id,
-                'name': product['name'],
-                'price': product['price'],
+                'name': product.name,
                 'quantity': quantity,
                 'total': item_total
             })
             total_price += item_total
-    return render_template('cart.html', cart_items=cart_items, total_price=total_price)
+
+    # Retrieve saved-for-later items
+    saved_items = SavedForLater.query.filter_by(user_id=user_id).all()
+
+    # Generate recommendations based on cart contents (example logic)
+    recommendations = []
+    if cart_items:
+        product_ids = [item['id'] for item in cart_items]
+        # Recommend other products not in the cart
+        recommendations = Product.query.filter(Product.id.notin_(product_ids)).limit(3).all()
+
+    return render_template('cart.html', cart_items=cart_items, saved_items=saved_items, total_price=total_price, recommendations=recommendations)
+
+@app.route('/save_for_later/<int:product_id>', methods=['POST'])
+def save_for_later(product_id):
+    """Save a product for later purchase"""
+    if not session.get('user_id'):
+        flash('Log in to save this item for later.')
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    saved_item = SavedForLater.query.filter_by(user_id=user_id, product_id=product_id).first()
+
+    if not saved_item:
+        new_saved_item = SavedForLater(user_id=user_id, product_id=product_id)
+        db.session.add(new_saved_item)
+        db.session.commit()
+        flash('Item saved for later.')
+    else:
+        flash('Item is already saved for later.')
+
+    return redirect(url_for('cart'))
 
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
