@@ -1,18 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - J00NE{% endblock %}
-
 {% block content %}
 <h1 class="mb-4">Welcome to J00NE Store</h1>
 <div class="row">
-    {% for id, product in products.items() %}
+    {% for product in products %}
     <div class="col-md-4">
         <div class="card mb-4 shadow-sm">
             <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
             <div class="card-body">
                 <h5 class="card-title">{{ product.name }}</h5>
                 <p class="card-text">Price: ${{ product.price }}</p>
-                <a href="{{ url_for('view_product', id=id) }}" class="btn btn-primary btn-block">View Details</a>
+                <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary btn-block">View Details</a>
             </div>
         </div>
     </div>
