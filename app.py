@@ -9,19 +9,26 @@ DATABASE_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'joone.
 
 # Initialize the Flask application
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')  # Ensure your secret key is set
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'  # SQLite database path
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy for ORM
 db = SQLAlchemy(app)
 
 # Define Models
+wishlist_items = db.Table('wishlist_items',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('product_id', db.Integer, db.ForeignKey('product.id'))
+)
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+    wishlist = db.relationship('Product', secondary=wishlist_items, back_populates='wishlisted_by')
+    reviews = db.relationship('Review', cascade='all,delete-orphan', back_populates='user')
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,6 +36,8 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     image = db.Column(db.String(200), nullable=False)
     year = db.Column(db.Integer, nullable=False)
+    wishlisted_by = db.relationship('User', secondary=wishlist_items, back_populates='wishlist')
+    reviews = db.relationship('Review', order_by='Review.id', back_populates='product')
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,21 +46,35 @@ class Order(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     order_date = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.Text, nullable=True)
+    review_date = db.Column(db.DateTime, default=datetime.utcnow)
+    product = db.relationship('Product', back_populates='reviews')
+    user = db.relationship('User', back_populates='reviews')
+
 # Helper Functions
 def fetch_products():
     """Fetch all products from the database"""
     products = Product.query.all()
     return {str(product.id): {'name': product.name, 'price': product.price, 'image': product.image, 'year': product.year} for product in products}
 
-# Routes
+# Context processor to add current year globally
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.now().year}
 
+# Routes
 @app.route('/')
 def index():
     """Render the homepage with a list of products"""
     products = fetch_products()
     return render_template('index.html', products=products, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
 
-@app.route('/product/<id>')
+@app.route('/product/<int:id>')
 def view_product(id):
     """Render a page to view a specific product"""
     product = Product.query.get(id)
@@ -126,7 +149,7 @@ def logout():
     flash('Logged out successfully!')
     return redirect(url_for('index'))
 
-@app.route('/add_to_cart/<id>')
+@app.route('/add_to_cart/<int:id>')
 def add_to_cart(id):
     """Add a product to the shopping cart"""
     if not session.get('user_id'):
@@ -422,6 +445,56 @@ def change_admin_password():
             return redirect(url_for('change_admin_password'))
         
     return render_template('change_admin_password.html')
+
+@app.route('/add_review/<int:product_id>', methods=['POST'])
+def add_review(product_id):
+    """Add a review for a specified product"""
+    if not session.get('user_id'):
+        flash('You must be logged in to leave a review.')
+        return redirect(url_for('login'))
+
+    rating = int(request.form['rating'])
+    comment = request.form.get('comment')
+    review = Review(user_id=session['user_id'], product_id=product_id, rating=rating, comment=comment)
+
+    try:
+        db.session.add(review)
+        db.session.commit()
+        flash('Review added successfully!')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while adding your review.')
+
+    return redirect(url_for('view_product', id=product_id))
+
+@app.route('/add_to_wishlist/<int:product_id>', methods=['POST'])
+def add_to_wishlist(product_id):
+    """Add a product to the user's wishlist"""
+    if not session.get('user_id'):
+        flash('Log in to add this item to your wishlist.')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    product = Product.query.get(product_id)
+
+    if product not in user.wishlist:
+        user.wishlist.append(product)
+        db.session.commit()
+        flash('Added to your wishlist.')
+    else:
+        flash('This item is already in your wishlist.')
+
+    return redirect(url_for('view_product', id=product_id))
+
+@app.route('/wishlist')
+def wishlist():
+    """View the user's wishlist"""
+    if not session.get('user_id'):
+        flash('Log in to view your wishlist.')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    return render_template('wishlist.html', products=user.wishlist)
 
 # Run the application
 if __name__ == '__main__':

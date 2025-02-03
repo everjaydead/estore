@@ -1,18 +1,47 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ product.name }} - J00NE{% endblock %}
-
 {% block content %}
 <div class="row">
     <div class="col-lg-6">
-        <img src="{{ url_for('static', filename=product.image) }}" class="img-fluid" alt="{{ product.name }}">
+        <img src="{{ image_url }}" class="img-fluid" alt="{{ product.name }}">
     </div>
     <div class="col-lg-6">
         <h2>{{ product.name }}</h2>
         <p>Price: ${{ product.price }}</p>
         <p>Year: {{ product.year }}</p>
+        <!-- Add to Wishlist -->
+        <form action="{{ url_for('add_to_wishlist', id=product.id) }}" method="post">
+            <button class="btn btn-warning">Add to Wishlist</button>
+        </form>
         <a href="{{ url_for('add_to_cart', id=product.id) }}" class="btn btn-success">Add to Cart</a>
         <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Products</a>
+
+        <!-- Reviews Section -->
+        <h3 class="mt-4">Reviews</h3>
+        <div>
+            {% for review in product.reviews %}
+            <div class="border p-3 mb-3">
+                <strong>Rating: {{ review.rating }}/5</strong> - {{ review.comment }}<br>
+                <em>by {{ review.user.username }} on {{ review.review_date.strftime('%Y-%m-%d') }}</em>
+            </div>
+            {% endfor %}
+        </div>
+        <form method="post" action="{{ url_for('add_review', product_id=product.id) }}">
+            <div class="form-group">
+                <label for="rating">Rating</label>
+                <select class="form-control" id="rating" name="rating" required>
+                    <option value="">Select Rating</option>
+                    {% for i in range(1, 6) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="comment">Comment</label>
+                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
     </div>
 </div>
 {% endblock %}
