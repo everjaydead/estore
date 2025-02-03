@@ -66,12 +66,6 @@ class SavedForLater(db.Model):
     user = db.relationship('User', back_populates='saved_items')
     product = db.relationship('Product', back_populates='saved_for_later_by')
 
-# Helper Functions
-def fetch_products():
-    """Fetch all products from the database"""
-    products = Product.query.all()
-    return {str(product.id): {'name': product.name, 'price': product.price, 'image': product.image, 'year': product.year} for product in products}
-
 # Context processor to add current year globally
 @app.context_processor
 def inject_current_year():
@@ -80,22 +74,20 @@ def inject_current_year():
 # Routes
 @app.route('/')
 def index():
-    """Render the homepage with a list of products"""
-    products = fetch_products()
+    products = Product.query.all()
     return render_template('index.html', products=products, logged_in=session.get('user_id'), is_admin=session.get('is_admin'))
 
 @app.route('/product/<int:id>')
 def view_product(id):
-    """Render a page to view a specific product"""
     product = Product.query.get(id)
     if product:
         image_path = url_for('static', filename=product.image)
         return render_template('product.html', product=product, image_url=image_path)
-    return "Product not found", 404
+    flash('Product not found.')
+    return redirect(url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """Handle user registration"""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -133,7 +125,6 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Handle user login"""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -152,7 +143,6 @@ def login():
 
 @app.route('/logout')
 def logout():
-    """Log out the user"""
     session.pop('user_id', None)
     session.pop('username', None)
     session.pop('is_admin', None)
@@ -161,7 +151,6 @@ def logout():
 
 @app.route('/add_to_cart/<int:id>')
 def add_to_cart(id):
-    """Add a product to the shopping cart"""
     if not session.get('user_id'):
         flash("You must be logged in to add items to your cart.")
         return redirect(url_for('login'))
@@ -175,13 +164,11 @@ def add_to_cart(id):
 
 @app.route('/cart')
 def cart():
-    """Show the contents of the shopping cart"""
     user_id = session.get('user_id')
     if not user_id:
         flash('You must be logged in to view your cart.')
         return redirect(url_for('login'))
 
-    # Retrieve cart items
     cart = session.get('cart', {})
     cart_items = []
     total_price = 0
@@ -189,29 +176,19 @@ def cart():
         product = Product.query.get(id)
         if product:
             item_total = product.price * quantity
-            cart_items.append({
-                'id': id,
-                'name': product.name,
-                'quantity': quantity,
-                'total': item_total
-            })
+            cart_items.append({'product': product, 'quantity': quantity, 'total': item_total})
             total_price += item_total
 
-    # Retrieve saved-for-later items
     saved_items = SavedForLater.query.filter_by(user_id=user_id).all()
-
-    # Generate recommendations based on cart contents (example logic)
     recommendations = []
     if cart_items:
-        product_ids = [item['id'] for item in cart_items]
-        # Recommend other products not in the cart
+        product_ids = [item['product'].id for item in cart_items]
         recommendations = Product.query.filter(Product.id.notin_(product_ids)).limit(3).all()
 
     return render_template('cart.html', cart_items=cart_items, saved_items=saved_items, total_price=total_price, recommendations=recommendations)
 
 @app.route('/save_for_later/<int:product_id>', methods=['POST'])
 def save_for_later(product_id):
-    """Save a product for later purchase"""
     if not session.get('user_id'):
         flash('Log in to save this item for later.')
         return redirect(url_for('login'))
@@ -231,7 +208,6 @@ def save_for_later(product_id):
 
 @app.route('/add_product', methods=['GET', 'POST'])
 def add_product():
-    """Allow admins to add a new product"""
     if not session.get('user_id'):
         flash('You must be logged in to add products.')
         return redirect(url_for('login'))
@@ -269,17 +245,15 @@ def add_product():
 
 @app.route('/manage_products')
 def manage_products():
-    """List and manage all products (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to manage products.')
         return redirect(url_for('index'))
     
-    products = fetch_products()
+    products = Product.query.all()
     return render_template('manage_products.html', products=products)
 
 @app.route('/edit_product/<int:id>', methods=['GET', 'POST'])
 def edit_product(id):
-    """Edit a specific product"""
     if not session.get('user_id'):
         flash('You must be logged in to edit products.')
         return redirect(url_for('login'))
@@ -324,7 +298,6 @@ def edit_product(id):
 
 @app.route('/delete_product/<int:id>', methods=['POST'])
 def delete_product(id):
-    """Handle product deletion (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to delete products.')
         return redirect(url_for('index'))
@@ -345,7 +318,6 @@ def delete_product(id):
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
-    """Update user profile information"""
     user_id = session.get('user_id')
     if not user_id:
         flash('You must be logged in to access your profile.')
@@ -379,7 +351,6 @@ def profile():
 
 @app.route('/order_history')
 def order_history():
-    """View the logged-in user's order history"""
     user_id = session.get('user_id')
     if not user_id:
         flash('You must be logged in to view your order history.')
@@ -397,7 +368,6 @@ def order_history():
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    """Dashboard view for admins"""
     if not session.get('is_admin'):
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
@@ -411,7 +381,6 @@ def admin_dashboard():
 
 @app.route('/manage_users', methods=['GET', 'POST'])
 def manage_users():
-    """Manage user roles and access (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to manage users.')
         return redirect(url_for('index'))
@@ -438,7 +407,6 @@ def manage_users():
 
 @app.route('/edit_user/<int:id>', methods=['GET', 'POST'])
 def edit_user(id):
-    """Edit a user's information (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to manage users.')
         return redirect(url_for('index'))
@@ -455,7 +423,6 @@ def edit_user(id):
 
 @app.route('/users', methods=['GET'])
 def users():
-    """Display all users (admin only)"""
     if not session.get('is_admin'):
         flash('You do not have permission to access the users list.')
         return redirect(url_for('index'))
@@ -465,7 +432,6 @@ def users():
 
 @app.route('/change_admin_password', methods=['GET', 'POST'])
 def change_admin_password():
-    """Allows admin users to change their passwords"""
     if not session.get('is_admin'):
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
@@ -494,7 +460,6 @@ def change_admin_password():
 
 @app.route('/add_review/<int:product_id>', methods=['POST'])
 def add_review(product_id):
-    """Add a review for a specified product"""
     if not session.get('user_id'):
         flash('You must be logged in to leave a review.')
         return redirect(url_for('login'))
@@ -515,7 +480,6 @@ def add_review(product_id):
 
 @app.route('/add_to_wishlist/<int:product_id>', methods=['POST'])
 def add_to_wishlist(product_id):
-    """Add a product to the user's wishlist"""
     if not session.get('user_id'):
         flash('Log in to add this item to your wishlist.')
         return redirect(url_for('login'))
@@ -534,7 +498,6 @@ def add_to_wishlist(product_id):
 
 @app.route('/wishlist')
 def wishlist():
-    """View the user's wishlist"""
     if not session.get('user_id'):
         flash('Log in to view your wishlist.')
         return redirect(url_for('login'))
@@ -545,5 +508,5 @@ def wishlist():
 # Run the application
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Ensures all tables are created based on model definitions
+        db.create_all()
     app.run(debug=True)
