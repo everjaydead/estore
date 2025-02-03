@@ -28,7 +28,6 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     wishlist = db.relationship('Product', secondary=wishlist_items, back_populates='wishlisted_by')
-    saved_items = db.relationship('SavedForLater', back_populates='user')
     reviews = db.relationship('Review', cascade='all,delete-orphan', back_populates='user')
 
 class Product(db.Model):
@@ -38,7 +37,6 @@ class Product(db.Model):
     image = db.Column(db.String(200), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     wishlisted_by = db.relationship('User', secondary=wishlist_items, back_populates='wishlist')
-    saved_for_later_by = db.relationship('SavedForLater', back_populates='product')
     reviews = db.relationship('Review', order_by='Review.id', back_populates='product')
 
 class Order(db.Model):
@@ -63,8 +61,6 @@ class SavedForLater(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     date_saved = db.Column(db.DateTime, default=datetime.utcnow)
-    user = db.relationship('User', back_populates='saved_items')
-    product = db.relationship('Product', back_populates='saved_for_later_by')
 
 # Context processor to add current year globally
 @app.context_processor
@@ -143,23 +139,20 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)
-    session.pop('username', None)
-    session.pop('is_admin', None)
+    session.clear()  # Clears all session data
     flash('Logged out successfully!')
     return redirect(url_for('index'))
 
-@app.route('/add_to_cart/<int:id>')
-def add_to_cart(id):
+@app.route('/add_to_cart/<int:product_id>')
+def add_to_cart(product_id):
     if not session.get('user_id'):
         flash("You must be logged in to add items to your cart.")
         return redirect(url_for('login'))
 
-    if 'cart' not in session:
-        session['cart'] = {}
+    session.setdefault('cart', {})
     cart = session['cart']
-    cart[id] = cart.get(id, 0) + 1
-    session['cart'] = cart
+    cart[product_id] = cart.get(product_id, 0) + 1
+    session.modified = True
     return redirect(url_for('cart'))
 
 @app.route('/cart')
@@ -172,8 +165,8 @@ def cart():
     cart = session.get('cart', {})
     cart_items = []
     total_price = 0
-    for id, quantity in cart.items():
-        product = Product.query.get(id)
+    for product_id, quantity in cart.items():
+        product = Product.query.get(product_id)
         if product:
             item_total = product.price * quantity
             cart_items.append({'product': product, 'quantity': quantity, 'total': item_total})
@@ -234,7 +227,7 @@ def add_product():
             db.session.add(new_product)
             db.session.commit()
             flash('Product added successfully!')
-            return redirect(url_for('index'))
+            return redirect(url_for('manage_products'))
         except Exception as e:
             print(e)
             db.session.rollback()
@@ -263,7 +256,7 @@ def edit_product(id):
         return redirect(url_for('index'))
 
     product = Product.query.get(id)
-    if request.method == 'POST':
+    if product and request.method == 'POST':
         name = request.form['name']
         price = request.form['price']
         image = request.form['image']
@@ -289,12 +282,11 @@ def edit_product(id):
             db.session.rollback()
             flash('An error occurred while updating the product.')
             return redirect(url_for('edit_product', id=id))
-    else:
-        if product:
-            return render_template('edit_product.html', product=product)
-        else:
-            flash('Product not found.')
-            return redirect(url_for('manage_products'))
+    elif not product:
+        flash('Product not found.')
+        return redirect(url_for('manage_products'))
+
+    return render_template('edit_product.html', product=product)
 
 @app.route('/delete_product/<int:id>', methods=['POST'])
 def delete_product(id):
