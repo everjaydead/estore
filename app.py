@@ -145,14 +145,15 @@ def logout():
 
 @app.route('/add_to_cart/<int:product_id>')
 def add_to_cart(product_id):
+    """Add a product to the shopping cart"""
     if not session.get('user_id'):
         flash("You must be logged in to add items to your cart.")
         return redirect(url_for('login'))
 
     session.setdefault('cart', {})
     cart = session['cart']
-    cart[product_id] = cart.get(product_id, 0) + 1
-    session.modified = True
+    cart[product_id] = cart.get(product_id, 0) + 1  # Increment product count in cart
+    session.modified = True  # Flag session as modified to update cookie
     return redirect(url_for('cart'))
 
 @app.route('/cart')
