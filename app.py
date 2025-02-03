@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, session, request, f
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from forms import RegistrationForm, LoginForm, ProductForm  # Assuming a forms module has been created
 import os
 
 # Define the path to the database
@@ -10,6 +11,8 @@ DATABASE_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'joone.
 # Initialize the Flask application
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key')
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -71,6 +74,16 @@ class SavedForLater(db.Model):
 def inject_current_year():
     return {'current_year': datetime.now().year}
 
+# Error Handlers
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    db.session.rollback()
+    return render_template('500.html'), 500
+
 # Routes
 @app.route('/')
 def index():
@@ -88,18 +101,10 @@ def view_product(id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-
-        if not username or not password or not confirm_password:
-            flash('Please fill in all fields.')
-            return redirect(url_for('register'))
-
-        if password != confirm_password:
-            flash('Passwords do not match.')
-            return redirect(url_for('register'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
 
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
@@ -107,7 +112,7 @@ def register():
             return redirect(url_for('register'))
 
         is_first_user_admin = User.query.filter_by(is_admin=True).count() == 0
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
         new_user = User(username=username, password=hashed_password, is_admin=is_first_user_admin)
 
         try:
@@ -121,13 +126,14 @@ def register():
             flash('An error occurred during registration.')
             return redirect(url_for('register'))
 
-    return render_template('register.html')
+    return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
 
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
@@ -139,7 +145,7 @@ def login():
 
         flash('Invalid username or password.')
 
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -214,18 +220,15 @@ def add_product():
         flash('You do not have permission to add products.')
         return redirect(url_for('index'))
 
-    if request.method == 'POST':
-        name = request.form['name']
-        price = request.form['price']
-        image = request.form['image']
-        year = request.form['year']
+    form = ProductForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        price = form.price.data
+        image = form.image.data
+        year = form.year.data
 
         if image.startswith('static/'):
             image = image[7:]
-
-        if not name or not price or not image or not year:
-            flash('Please fill in all fields.')
-            return redirect(url_for('add_product'))
 
         try:
             new_product = Product(name=name, price=float(price), image=image, year=int(year))
@@ -239,7 +242,7 @@ def add_product():
             flash('An error occurred while adding the product.')
             return redirect(url_for('add_product'))
 
-    return render_template('add_product.html')
+    return render_template('add_product.html', form=form)
 
 @app.route('/manage_products')
 def manage_products():
@@ -261,24 +264,13 @@ def edit_product(id):
         return redirect(url_for('index'))
 
     product = Product.query.get(id)
-    if product and request.method == 'POST':
-        name = request.form['name']
-        price = request.form['price']
-        image = request.form['image']
-        year = request.form['year']
-
-        if image.startswith('static/'):
-            image = image[7:]
-
-        if not name or not price or not image or not year:
-            flash('Please fill in all fields.')
-            return redirect(url_for('edit_product', id=id))
-
+    form = ProductForm(obj=product)
+    if product and form.validate_on_submit():
         try:
-            product.name = name
-            product.price = float(price)
-            product.image = image
-            product.year = int(year)
+            form.populate_obj(product)
+            if product.image.startswith('static/'):
+                product.image = product.image[7:]
+
             db.session.commit()
             flash('Product details updated successfully!')
             return redirect(url_for('manage_products'))
@@ -291,7 +283,7 @@ def edit_product(id):
         flash('Product not found.')
         return redirect(url_for('manage_products'))
 
-    return render_template('edit_product.html', product=product)
+    return render_template('edit_product.html', form=form, product=product)
 
 @app.route('/delete_product/<int:id>', methods=['POST'])
 def delete_product(id):
@@ -323,6 +315,7 @@ def profile():
     user = User.query.get(user_id)
     
     if request.method == 'POST':
+
         username = request.form['username']
         new_password = request.form.get('new_password')
         confirm_password = request.form.get('confirm_password')
@@ -445,7 +438,7 @@ def change_admin_password():
         admin_user = User.query.get(session['user_id'])
 
         if admin_user and check_password_hash(admin_user.password, current_password):
-            admin_user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
+            admin_user.password = generate_password_hash(new_password, method='pbkdf2:sha256', salt_length=16)
             db.session.commit()
             flash('Password changed successfully!')
             return redirect(url_for('admin_dashboard'))
