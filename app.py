@@ -18,8 +18,8 @@ db = SQLAlchemy(app)
 
 # Define Models
 wishlist_items = db.Table('wishlist_items',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('product_id', db.Integer, db.ForeignKey('product.id'))
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('product_id', db.Integer, db.ForeignKey('product.id'), primary_key=True)
 )
 
 class User(db.Model):
