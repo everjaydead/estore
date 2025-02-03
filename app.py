@@ -28,6 +28,7 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     wishlist = db.relationship('Product', secondary=wishlist_items, back_populates='wishlisted_by')
+    saved_items = db.relationship('SavedForLater', back_populates='user')
     reviews = db.relationship('Review', cascade='all,delete-orphan', back_populates='user')
 
 class Product(db.Model):
@@ -38,6 +39,7 @@ class Product(db.Model):
     year = db.Column(db.Integer, nullable=False)
     wishlisted_by = db.relationship('User', secondary=wishlist_items, back_populates='wishlist')
     reviews = db.relationship('Review', order_by='Review.id', back_populates='product')
+    saved_for_later = db.relationship('SavedForLater', back_populates='product')
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,8 +63,10 @@ class SavedForLater(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     date_saved = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref='saved_items')
+    product = db.relationship('Product', back_populates='saved_for_later')
 
-# Context processor to add current year globally
+# Context Processor
 @app.context_processor
 def inject_current_year():
     return {'current_year': datetime.now().year}
@@ -152,8 +156,8 @@ def add_to_cart(product_id):
 
     session.setdefault('cart', {})
     cart = session['cart']
-    cart[product_id] = cart.get(product_id, 0) + 1  # Increment product count in cart
-    session.modified = True  # Flag session as modified to update cookie
+    cart[product_id] = cart.get(product_id, 0) + 1
+    session.modified = True  # Mark session as modified
     return redirect(url_for('cart'))
 
 @app.route('/cart')
@@ -488,15 +492,6 @@ def add_to_wishlist(product_id):
         flash('This item is already in your wishlist.')
 
     return redirect(url_for('view_product', id=product_id))
-
-@app.route('/wishlist')
-def wishlist():
-    if not session.get('user_id'):
-        flash('Log in to view your wishlist.')
-        return redirect(url_for('login'))
-
-    user = User.query.get(session['user_id'])
-    return render_template('wishlist.html', products=user.wishlist)
 
 # Run the application
 if __name__ == '__main__':
