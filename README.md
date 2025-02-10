@@ -1,1 +1,1 @@
-# joone-flask-app
+# estore class project
