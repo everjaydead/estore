@@ -3,61 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}J00NE Site{% endblock %}</title>
+    <title>{% block title %}J00NE Store{% endblock %}</title>
     <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 0; /* Remove the gap completely */
+        }
+        .logo-separator {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <div class="logo-container">
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="J00NE Store Logo" height="30" class="d-inline-block align-text-top">
+                </a>
+                <a class="navbar-brand logo-separator" href="https://www.iyf.org">
+                    | IYF
+                </a>
+            </div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('products') }}">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('cart') }}">Cart</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="moreMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            More
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="moreMenu">
+                            <li><a class="dropdown-item" href="{{ url_for('help') }}">Help</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('contact') }}">Contact Us</a></li>
+                        </ul>
+                    </li>
+                    {% if session.get('user_id') %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="accountMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Account
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="accountMenu">
+                                <li><a class="dropdown-item" href="{{ url_for('order_history') }}">Order History</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('wishlist') }}">Wishlist</a></li>
+                                {% if session.get('is_admin') %}
+                                    <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if session.get('user_id') %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Welcome, {{ session.get('username') }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">
-        <!-- Logo -->
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
-    </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
-            {% if session.get('is_admin') %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_products') }}">Manage Products</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
-            {% endif %}
-        </ul>
-        <ul class="navbar-nav">
-            {% if session.get('user_id') %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">Profile</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
-            {% else %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
-            {% endif %}
-        </ul>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <h5 class="px-3 py-2 bg-secondary text-white mb-2">Categories</h5>
+                            <ul class="nav flex-column ms-2">
+                                {% for category in categories %}
+                                    {% if not category.parent_id %}
+                                    <li class="mb-2">
+                                        <a class="nav-link active" href="{{ url_for('products', category_id=category.id) }}">
+                                            {{ category.name }}
+                                        </a>
+                                        <ul class="nav flex-column ms-3 border-start ps-2">
+                                            {% for subcategory in category.children %}
+                                            <li class="mb-1">
+                                                <a class="nav-link" href="{{ url_for('products', category_id=subcategory.id) }}">
+                                                    {{ subcategory.name }}
+                                                </a>
+                                                <ul class="nav flex-column ms-3 border-start ps-2">
+                                                    {% for subsubcategory in subcategory.children %}
+                                                    <li>
+                                                        <a class="nav-link" href="{{ url_for('products', category_id=subsubcategory.id) }}">
+                                                            {{ subsubcategory.name }}
+                                                        </a>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
     </div>
-</nav>
 
-<!-- Main Content -->
-<div class="container my-4">
-    {% block content %}
-    {% endblock %}
-</div>
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <p>&copy; {{ current_year }} <a href="https://www.iyf.org" class="text-light">IYF</a> | J00NE Interactive LTD.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-<!-- Footer -->
-<footer class="footer mt-auto py-3 bg-dark text-light">
-    <div class="container text-center">
-        <span>&copy; {{ current_year }} IYF | J00NE Interactive LTD.</span>
-    </div>
-</footer>
-
-<!-- Bootstrap JS and dependencies -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

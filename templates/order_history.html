@@ -1,33 +1,38 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Order History - J00NE{% endblock %}
+{% block title %}Order History{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Order History</h2>
+    <h1>Order History</h1>
     {% if orders %}
-    <table class="table table-striped table-bordered">
-        <thead class="thead-dark">
-            <tr>
-                <th>Order ID</th>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Order Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>{{ order.id }}</td>
-                <td>{{ order.product_name }}</td>
-                <td>{{ order.quantity }}</td>
-                <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Order Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.product.name }}</td>
+                    <td>{{ order.quantity }}</td>
+                    <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-    <p>You have no previous orders.</p>
+    <div class="alert alert-warning" role="alert">
+        You have no order history.
+    </div>
     {% endif %}
+    <a href="{{ url_for('products') }}" class="btn btn-primary mt-3">Continue Shopping</a>
 </div>
 {% endblock %}

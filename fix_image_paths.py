@@ -2,11 +2,11 @@ import sqlite3
 
 def fix_image_paths():
     try:
-        # Connect to the database
+        # Connect to the SQLite database
         conn = sqlite3.connect('joone.db')
         cursor = conn.cursor()
 
-        # Update the image paths
+        # Update the image paths by removing the 'static/' prefix
         cursor.execute("""
             UPDATE products 
             SET image = REPLACE(image, 'static/', '')
@@ -16,19 +16,18 @@ def fix_image_paths():
         # Commit the changes
         conn.commit()
 
-        # Print the updated records to verify
+        # Debug: Show updated product images
         cursor.execute("SELECT id, name, image FROM products")
         products = cursor.fetchall()
-        print("\nUpdated product images:")
+        print("Updated product images:")
         for product in products:
-            print(f"ID: {product[0]}, Name: {product[1]}, Image: {product[2]}")
-
-        print("\nDatabase updated successfully!")
+            print(product)
 
     except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred with the SQLite database: {e}")
     
     finally:
+        # Ensure the connection is closed
         conn.close()
 
 if __name__ == "__main__":

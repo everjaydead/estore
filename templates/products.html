@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Products</h1>
+    <form method="get" action="{{ url_for('products') }}" class="mb-3">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" name="search" placeholder="Search" class="form-control" value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-3">
+                <select name="category_id" class="form-control">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {{ 'selected' if category.id == request.args.get('category_id', type=int) else '' }}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="min_price" placeholder="Min Price" class="form-control" value="{{ request.args.get('min_price', '') }}">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="max_price" placeholder="Max Price" class="form-control" value="{{ request.args.get('max_price', '') }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">KSh {{ product.price }}</p>
+                    <p class="card-text">Stock: {{ product.stock }}</p>
+                    <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

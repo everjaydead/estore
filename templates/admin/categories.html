@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Categories{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Category Management</h1>
+
+    <!-- Form to Add New Category -->
+    <div class="mb-4">
+        <h3>Add New Category</h3>
+        <form method="POST" action="{{ url_for('admin_categories') }}">
+            <div class="mb-3">
+                <label for="name" class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="parent" class="form-label">Parent Category</label>
+                <select class="form-select" id="parent" name="parent_id">
+                    <option value="">No Parent (Top-level Category)</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Category</button>
+        </form>
+    </div>
+
+    <!-- Existing Categories List -->
+    <h3>Existing Categories</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Parent</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>{{ category.name }}</td>
+                <td>{{ category.parent.name if category.parent else 'None' }}</td>
+                <td>
+                    <a href="{{ url_for('admin_edit_category', id=category.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                    <form method="POST" action="{{ url_for('admin_delete_category', id=category.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -12,5 +12,4 @@ except sqlite3.OperationalError:
 
 conn.commit()
 conn.close()
-
 print("Database updated successfully!")

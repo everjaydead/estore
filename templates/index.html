@@ -1,19 +1,72 @@
 {% extends 'base.html' %}
 
+{% block title %}Welcome to J00NE Store{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">Welcome to J00NE Store</h1>
-<div class="row">
-    {% for product in products %}
-    <div class="col-md-4">
-        <div class="card mb-4 shadow-sm">
-            <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
-            <div class="card-body">
-                <h5 class="card-title">{{ product.name }}</h5>
-                <p class="card-text">Price: ${{ product.price }}</p>
-                <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary btn-block">View Details</a>
+<div class="container mt-4">
+
+    <!-- Featured Products Carousel -->
+    <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for i, product in enumerate(featured_products) %}
+            <div class="carousel-item {% if i == 0 %} active {% endif %}">
+                <img src="{{ url_for('static', filename=product.image) }}" class="d-block w-100" alt="{{ product.name }}">
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>{{ product.name }}</h5>
+                    <p>KSh {{ product.price }}</p>
+                    <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">Shop Now</a>
+                </div>
             </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <!-- Product Categories -->
+    <div class="mt-5">
+        <h2>Shop by Category</h2>
+        <div class="row mt-3">
+            {% for category in categories %}
+            <div class="col-md-4 text-center mb-4">
+                <a href="{{ url_for('products') }}?category_id={{ category.id }}" class="text-decoration-none">
+                    <div class="card shadow-sm">
+                        <img src="{{ url_for('static', filename=category.image) }}" class="card-img-top"
+                            alt="{{ category.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
         </div>
     </div>
-    {% endfor %}
+
+    <!-- Recommended Products -->
+    <div class="mt-5">
+        <h2>Recommended for You</h2>
+        <div class="row mt-3">
+            {% for product in recommended_products %}
+            <div class="col-md-3 text-center mb-4">
+                <div class="card shadow-sm">
+                    <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">KSh {{ product.price }}</p>
+                        <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}

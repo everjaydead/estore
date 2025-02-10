@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Checkout</h1>
+    {% if cart_items %}
+    <div class="alert alert-info">Please review your order before proceeding.</div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>KSh {{ item.product.price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" class="text-end fw-bold">Total:</td>
+                <td class="fw-bold">KSh {{ total_price }}</td>
+            </tr>
+        </tfoot>
+    </table>
+    <div class="text-end">
+        <form method="POST">
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" class="form-control" required placeholder="2547XXXXXXXX">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg mt-2">Complete Purchase</button>
+        </form>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">Your cart is empty.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -155,14 +155,32 @@ footer {
 .form-container h2 {
     text-align: center;
     margin-bottom: 15px;
-    !important; /* This is important to override conflicting styles */
+    !important; 
 }
 
 .navbar-brand img {
-    margin-right: 10px;
+    margin-right: 0; /* Remove gap between logo and text */
 }
 
 .navbar-brand {
     display: flex;
     align-items: center;
+}
+
+.sidebar .nav-link {
+    color: #333;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    color: #0056b3; /* Bootstrap's link-hover standard color */
+    background-color: #f8f9fa; /* Lighten background on hover */
+}
+
+.sidebar .border-start {
+    border-left: 2px solid #ddd;
+}
+
+.sidebar .active {
+    font-weight: bold;
 }

@@ -1,47 +1,53 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<div class="row">
-    <div class="col-lg-6">
-        <img src="{{ image_url }}" class="img-fluid" alt="{{ product.name }}">
-    </div>
-    <div class="col-lg-6">
-        <h2>{{ product.name }}</h2>
-        <p>Price: ${{ product.price }}</p>
-        <p>Year: {{ product.year }}</p>
-        <form action="{{ url_for('add_to_wishlist', product_id=product.id) }}" method="post" style="display: inline;">
-            <button class="btn btn-warning" type="submit">Add to Wishlist</button>
-        </form>
-        <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn btn-success">Add to Cart</a>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Products</a>
+{% block title %}{{ product.name }} - Joone Store{% endblock %}
 
-        {% if product.reviews %}
-        <div class="mt-4">
-            <h3>Reviews</h3>
-            {% for review in product.reviews %}
-            <div class="border p-3 mb-3">
-                <strong>Rating: {{ review.rating }}/5</strong> - {{ review.comment }}<br>
-                <em>by {{ review.user.username }} on {{ review.review_date.strftime('%Y-%m-%d') }}</em>
-            </div>
-            {% endfor %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ image_url }}" class="img-fluid" alt="{{ product.name }}">
         </div>
-        {% endif %}
-        <form method="post" action="{{ url_for('add_review', product_id=product.id) }}">
-            <div class="form-group">
-                <label for="rating">Rating</label>
-                <select class="form-control" id="rating" name="rating" required>
-                    <option value="">Select Rating</option>
-                    {% for i in range(1, 6) %}
-                    <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="comment">Comment</label>
-                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit Review</button>
-        </form>
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            <h3>KSh {{ product.price }}</h3>
+            <p>Year: {{ product.year }}</p>
+            <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post">
+                <button class="btn btn-primary mt-2">Add to Cart</button>
+            </form>
+            <form action="{{ url_for('add_to_wishlist', product_id=product.id) }}" method="post">
+                <button class="btn btn-secondary mt-2">Add to Wishlist</button>
+            </form>
+            <form action="{{ url_for('save_for_later', product_id=product.id) }}" method="post">
+                <button class="btn btn-secondary mt-2">Save for Later</button>
+            </form>
+        </div>
     </div>
+    <hr>
+    <h3>Reviews:</h3>
+    <ul class="list-group mt-3">
+        {% for review in product.reviews %}
+        <li class="list-group-item">
+            <strong>Rating: </strong>{{ review.rating }}<br>
+            <strong>Comment: </strong>{{ review.comment }}<br>
+            <small>By User ID: {{ review.user_id }}, on {{ review.review_date.strftime('%Y-%m-%d') }}</small>
+        </li>
+        {% else %}
+        <li class="list-group-item">No reviews yet. Be the first one!</li>
+        {% endfor %}
+    </ul>
+    <h4 class="mt-4">Add a Review</h4>
+    <form method="POST" action="{{ url_for('add_review', product_id=product.id) }}">
+        {{ review_form.hidden_tag() }}
+        <div class="mb-3">
+            {{ review_form.rating.label(class="form-label") }}
+            {{ review_form.rating(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ review_form.comment.label(class="form-label") }}
+            {{ review_form.comment(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
 </div>
 {% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Products{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Manage Products</h1>
+    <a href="{{ url_for('admin_add_product') }}" class="btn btn-primary mb-3">Add New Product</a>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Year</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+                <tr>
+                    <td>{{ product.id }}</td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category.name if product.category else 'Uncategorized' }}</td>
+                    <td>KSh {{ product.price }}</td>
+                    <td>{{ product.year }}</td>
+                    <td>{{ product.stock }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_edit_product', id=product.id) }}" class="btn btn-warning">Edit</a>
+                        <form action="{{ url_for('admin_delete_product', id=product.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this product?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

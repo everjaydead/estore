@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit User - {{ user.username }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Edit User: {{ user.username }}</h2>
+    <form method="post" action="{{ url_for('admin_edit_user', id=user.id) }}" class="form">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            <label class="form-label">Username:</label>
+            {{ form.username(class="form-control") }}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Email:</label>
+            {{ form.email(class="form-control") }}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Password:</label>
+            {{ form.password(class="form-control") }}
+            <small class="form-text text-muted">Leave blank to keep the current password.</small>
+            <small class="form-text text-muted">Password must be at least 8 characters and contain a mix of letters and numbers.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Confirm Password:</label>
+            {{ form.confirm_password(class="form-control") }}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Role:</label>
+            {{ form.role(class="form-select") }}
+        </div>
+        
+        <div class="mb-3 form-check">
+            {{ form.is_active(class="form-check-input") }}
+            <label class="form-check-label">Active Account</label>
+        </div>
+        
+        <div class="mb-3 form-check">
+            {{ form.is_locked(class="form-check-input") }}
+            <label class="form-check-label">Lock Account</label>
+        </div>
+        
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for error in form.errors.values() %}
+                        {% for message in error %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+</div>
+{% endblock %}
