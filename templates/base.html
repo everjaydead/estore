@@ -12,11 +12,6 @@
         .logo-container {
             display: inline-flex;
             align-items: center;
-            gap: 0; /* Remove the gap completely */
-        }
-        .logo-separator {
-            font-size: 1.2rem;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -27,9 +22,6 @@
             <div class="logo-container">
                 <a class="navbar-brand" href="{{ url_for('index') }}">
                     <img src="{{ url_for('static', filename='img/logo.png') }}" alt="J00NE Store Logo" height="30" class="d-inline-block align-text-top">
-                </a>
-                <a class="navbar-brand logo-separator" href="https://www.iyf.org">
-                    | IYF
                 </a>
             </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -146,7 +138,7 @@
         <div class="container">
             <div class="row">
                 <div class="col text-center">
-                    <p>&copy; {{ current_year }} <a href="https://www.iyf.org" class="text-light">IYF</a> | J00NE Interactive LTD.</p>
+                    <p>&copy; {{ current_year }} IYF Class Project by Chelsea, Justus & Randy</p>
                 </div>
             </div>
         </div>
