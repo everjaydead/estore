@@ -14,15 +14,14 @@ from forms import (RegistrationForm, LoginForm, ProductForm,
                    PasswordResetForm, EditUserForm)
 from models import db, User, Product, Order, Review, SavedForLater, Category
 
-# Define base directory path and database path
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DATABASE_PATH = os.path.join(BASE_DIR, 'joone.db')
-
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')
 app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE_PATH}'
+
+# Set the SQLAlchemy database URI to use the DATABASE_URL environment variable,
+# which is automatically set by Heroku when a Postgres database is added.
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(os.path.abspath(os.path.dirname(__file__)), "joone.db")}')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Mail server configuration
