@@ -19,7 +19,6 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')
 app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
-# Check for DATABASE_URL and ensure it uses postgresql+psycopg2 as the prefix to make it Heroku-compatible
 uri = os.getenv("DATABASE_URL", f'sqlite:///{os.path.join(os.path.abspath(os.path.dirname(__file__)), "joone.db")}')
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql+psycopg2://", 1)
@@ -27,7 +26,6 @@ if uri.startswith("postgres://"):
 app.config['SQLALCHEMY_DATABASE_URI'] = uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Mail server configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -35,12 +33,11 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@example.com')
 
-# M-Pesa configurations
 MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'MrokSMjOLMuyNkB0G53KBRcaLP1gdvbb4AJUobP3vCYMVxYG')
 MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'acoffT5LyPaGhV4WQMMRyJjxZWR9MzOmHW3gDBHtRCvlNOtpc7AiOarKm7A5JsCy')
 MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', 'your-shortcode')
 MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'your-passkey')
-MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  # Change to 'production' for live environment
+MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  
 MPESA_BASE_URL = 'https://sandbox.safaricom.co.ke' if MPESA_ENVIRONMENT == 'sandbox' else 'https://api.safaricom.co.ke'
 
 mail = Mail(app)
@@ -59,18 +56,15 @@ def send_password_reset_email(user_email, reset_url):
         flash("Failed to send email. Please try again later.", "error")
 
 def save_picture(form_picture):
-    # Implement file saving logic (e.g., saving profile pictures)
-    pass  # Add functionality for saving images
+    pass  
 
 def get_access_token():
-    """Generate M-Pesa API access token."""
     api_url = f"{MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials"
     response = requests.get(api_url, auth=(MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET))
     json_response = response.json()
     return json_response['access_token']
 
 def lipa_na_mpesa_online(total_price, phone_number):
-    """Make payment request to M-Pesa for the specified amount."""
     access_token = get_access_token()
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     password = base64.b64encode(f"{MPESA_SHORTCODE}{MPESA_PASSKEY}{timestamp}".encode()).decode('utf-8')
@@ -180,9 +174,7 @@ def checkout():
 
 @app.route('/mpesa_callback', methods=['POST'])
 def mpesa_callback():
-    # Logic to handle callback from M-Pesa
     data = request.get_json()
-    # Process the data based on your requirements
     return "Callback received", 200
 
 @app.route('/product/<int:id>')
@@ -309,7 +301,7 @@ def profile():
         user.username = form.username.data
         user.email = form.email.data
         if form.profile_picture.data:
-            picture_file = save_picture(form.profile_picture.data)  # Implement save_picture to handle file saving
+            picture_file = save_picture(form.profile_picture.data)  
             user.profile_picture = picture_file
         user.bio = form.bio.data
 
@@ -567,7 +559,8 @@ def admin_add_product():
             image=form.image.data,
             brand=form.brand.data,
             category_id=form.category.data,
-            stock=form.stock.data
+            stock=form.stock.data,
+            featured=form.featured.data
         )
         try:
             db.session.add(product)
@@ -600,6 +593,7 @@ def admin_edit_product(id):
         product.brand = form.brand.data
         product.category_id = form.category.data
         product.stock = form.stock.data
+        product.featured = form.featured.data
 
         try:
             db.session.commit()
@@ -768,7 +762,6 @@ def help():
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
     if request.method == 'POST':
-        # Handle form submission logic here, e.g., send email
         flash('Thank you for reaching out. We will get back to you shortly.', 'success')
         return redirect(url_for('contact'))
     return render_template('contact.html')

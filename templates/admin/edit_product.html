@@ -44,6 +44,12 @@
             {{ form.stock(class="form-control") }}
         </div>
 
+        <!-- Featured Product -->
+        <div class="mb-3 form-check">
+            {{ form.featured.label(class="form-check-label") }}
+            {{ form.featured(class="form-check-input") }}
+        </div>
+
         <button type="submit" class="btn btn-primary">Update Product</button>
     </form>
 </div>

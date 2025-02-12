@@ -22,6 +22,7 @@ class ProductForm(FlaskForm):
     brand = StringField('Brand', validators=[DataRequired()])
     category = SelectField('Category', coerce=int, validators=[DataRequired()])
     stock = IntegerField('Stock', validators=[DataRequired()])
+    featured = BooleanField('Featured')  # Added field
     submit = SubmitField('Submit')
 
 class ReviewForm(FlaskForm):
