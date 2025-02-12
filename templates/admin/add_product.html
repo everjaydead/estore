@@ -12,30 +12,78 @@
         <div class="mb-3">
             {{ form.name.label(class="form-label") }}
             {{ form.name(class="form-control") }}
+            {% if form.name.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.name.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         
         <!-- Price -->
         <div class="mb-3">
             {{ form.price.label(class="form-label") }}
             {{ form.price(class="form-control") }}
+            {% if form.price.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.price.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         
         <!-- Image -->
         <div class="mb-3">
             {{ form.image.label(class="form-label") }}
             {{ form.image(class="form-control") }}
+            {% if form.image.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.image.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         
         <!-- Brand -->
         <div class="mb-3">
             {{ form.brand.label(class="form-label") }}
             {{ form.brand(class="form-control") }}
+            {% if form.brand.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.brand.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <!-- Category Dropdown -->
         <div class="mb-3">
             {{ form.category.label(class="form-label") }}
             {{ form.category(class="form-select") }}
+            {% if form.category.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.category.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Stock -->
+        <div class="mb-3">
+            {{ form.stock.label(class="form-label") }}
+            {{ form.stock(class="form-control") }}
+            {% if form.stock.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.stock.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <button type="submit" class="btn btn-primary">Add Product</button>
