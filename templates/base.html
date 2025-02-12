@@ -18,12 +18,10 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <div class="logo-container">
-                <a class="navbar-brand" href="{{ url_for('index') }}">
-                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="J00NE Store Logo" height="30" class="d-inline-block align-text-top">
-                </a>
-            </div>
+        <div class="container-fluid"> <!-- Updated to container-fluid for full-width navbar -->
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="J00NE Store Logo" height="30" class="d-inline-block align-text-top">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
