@@ -13,6 +13,10 @@
             display: inline-flex;
             align-items: center;
         }
+        .flex-container {
+            display: flex;
+            flex-wrap: nowrap;
+        }
         #sidebar {
             width: 280px;
             transition: transform 0.3s ease;
@@ -20,6 +24,14 @@
         }
         #sidebar.show {
             transform: translateX(0);
+        }
+        .main-content {
+            flex-grow: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+        }
+        .main-content.reduced-margin {
+            margin-left: 0;
         }
     </style>
 </head>
@@ -91,53 +103,51 @@
         </div>
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-                <div class="position-sticky">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <h5 class="px-3 py-2 bg-secondary text-white mb-2">Categories</h5>
-                            <ul class="nav flex-column ms-2">
-                                {% for category in categories %}
-                                    {% if not category.parent_id %}
-                                    <li class="mb-2">
-                                        <a class="nav-link active" href="{{ url_for('products', category_id=category.id) }}">
-                                            {{ category.name }}
-                                        </a>
-                                        <ul class="nav flex-column ms-3 border-start ps-2">
-                                            {% for subcategory in category.children %}
-                                            <li class="mb-1">
-                                                <a class="nav-link" href="{{ url_for('products', category_id=subcategory.id) }}">
-                                                    {{ subcategory.name }}
-                                                </a>
-                                                <ul class="nav flex-column ms-3 border-start ps-2">
-                                                    {% for subsubcategory in subcategory.children %}
-                                                    <li>
-                                                        <a class="nav-link" href="{{ url_for('products', category_id=subsubcategory.id) }}">
-                                                            {{ subsubcategory.name }}
-                                                        </a>
-                                                    </li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+    <div class="container-fluid flex-container">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="bg-light">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <h5 class="px-3 py-2 bg-secondary text-white mb-2">Categories</h5>
+                        <ul class="nav flex-column ms-2">
+                            {% for category in categories %}
+                                {% if not category.parent_id %}
+                                <li class="mb-2">
+                                    <a class="nav-link active" href="{{ url_for('products', category_id=category.id) }}">
+                                        {{ category.name }}
+                                    </a>
+                                    <ul class="nav flex-column ms-3 border-start ps-2">
+                                        {% for subcategory in category.children %}
+                                        <li class="mb-1">
+                                            <a class="nav-link" href="{{ url_for('products', category_id=subcategory.id) }}">
+                                                {{ subcategory.name }}
+                                            </a>
+                                            <ul class="nav flex-column ms-3 border-start ps-2">
+                                                {% for subsubcategory in subcategory.children %}
+                                                <li>
+                                                    <a class="nav-link" href="{{ url_for('products', category_id=subsubcategory.id) }}">
+                                                        {{ subsubcategory.name }}
+                                                    </a>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-            <!-- Main Content -->
-            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+        <!-- Main Content -->
+        <main role="main" class="main-content">
+            {% block content %}{% endblock %}
+        </main>
     </div>
 
     <!-- Footer -->
@@ -158,6 +168,7 @@
     <script>
         document.getElementById('sidebarToggle').addEventListener('click', function () {
             document.getElementById('sidebar').classList.toggle('show');
+            document.querySelector('.main-content').classList.toggle('reduced-margin');
         });
     </script>
 </body>
