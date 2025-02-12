@@ -5,51 +5,39 @@
 {% block content %}
 <div class="container mt-4">
 
-    <!-- Featured Products Carousel -->
-    <div id="featuredCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
-        <div class="carousel-inner shadow-lg">
-            {% for i, product in enumerate(featured_products) %}
-            <div class="carousel-item {% if i == 0 %} active {% endif %}">
-                <img src="{{ url_for('static', filename=product.image) }}" class="d-block w-100" alt="{{ product.name }}" style="height: 450px; object-fit: cover;">
-                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
-                    <h5>{{ product.name }}</h5>
-                    <p class="mb-0">Brand: {{ product.brand }}</p>
-                    <p class="lead mb-4">KSh {{ product.price }}</p>
-                    <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">Shop Now</a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-
-    <!-- Product Categories -->
+    <!-- Featured Products -->
     <div class="mb-5">
-        <h2 class="text-center mb-4">Shop by Category</h2>
-        <div class="row justify-content-center">
-            {% for category in categories %}
-            <div class="col-md-4 col-lg-3 text-center mb-4">
-                <a href="{{ url_for('products') }}?category_id={{ category.id }}" class="text-decoration-none">
-                    <div class="card h-100 shadow-sm">
-                        {% if category.image %}
-                        <img src="{{ url_for('static', filename=category.image) }}" class="card-img-top" alt="{{ category.name }}" style="height: 200px; object-fit: cover;">
-                        {% else %}
-                        <img src="{{ url_for('static', filename='default_category.jpg') }}" class="card-img-top" alt="Default Category" style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ category.name }}</h5>
+        <h2 class="text-center mb-4">Featured Products</h2>
+        <div id="featuredCarousel" class="carousel slide shadow-lg" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for i, product in enumerate(featured_products|batch(4)) %}
+                <div class="carousel-item{% if i == 0 %} active{% endif %}">
+                    <div class="row justify-content-center">
+                        {% for product in product %}
+                        <div class="col-md-4 col-lg-3 text-center mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">Brand: {{ product.brand }}</p>
+                                    <p class="card-text">KSh {{ product.price }}</p>
+                                    <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">Shop Now</a>
+                                </div>
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
-                </a>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
     </div>
 
