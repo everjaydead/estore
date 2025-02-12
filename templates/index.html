@@ -12,14 +12,14 @@
                 <div class="carousel-item{% if i == 0 %} active{% endif %}">
                     <div class="row justify-content-center">
                         {% for product in product_batch %}
-                        <div class="col-md-4 col-lg-3 text-center mb-4">
+                        <div class="col-md-4 col-lg-3 d-flex align-items-stretch mb-4">
                             <div class="card h-100 shadow-sm">
                                 <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <h5 class="card-title">{{ product.name }}</h5>
                                     <p class="card-text">Brand: {{ product.brand }}</p>
                                     <p class="card-text">KSh {{ product.price }}</p>
-                                    <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">Shop Now</a>
+                                    <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary mt-auto">Shop Now</a>
                                 </div>
                             </div>
                         </div>
@@ -43,14 +43,14 @@
         <h2 class="text-center mb-4">Recommended for You</h2>
         <div class="row justify-content-center">
             {% for product in recommended_products %}
-            <div class="col-md-4 col-lg-3 text-center mb-4">
+            <div class="col-md-4 col-lg-3 d-flex align-items-stretch mb-4">
                 <div class="card h-100 shadow">
                     <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ product.name }}</h5>
                         <p class="card-text">Brand: {{ product.brand }}</p>
                         <p class="card-text">KSh {{ product.price }}</p>
-                        <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">View Details</a>
+                        <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary mt-auto">View Details</a>
                     </div>
                 </div>
             </div>
