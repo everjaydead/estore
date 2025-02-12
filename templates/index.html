@@ -38,7 +38,11 @@
             <div class="col-md-4 col-lg-3 text-center mb-4">
                 <a href="{{ url_for('products') }}?category_id={{ category.id }}" class="text-decoration-none">
                     <div class="card h-100 shadow-sm">
+                        {% if category.image %}
                         <img src="{{ url_for('static', filename=category.image) }}" class="card-img-top" alt="{{ category.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='default_category.jpg') }}" class="card-img-top" alt="Default Category" style="height: 200px; object-fit: cover;">
+                        {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ category.name }}</h5>
                         </div>
