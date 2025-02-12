@@ -11,6 +11,8 @@
     <style>
         .flex-container {
             display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
         #sidebar {
             position: fixed;
@@ -23,6 +25,7 @@
             transform: translateX(-280px);
             transition: transform 0.3s ease;
             z-index: 1050;
+            overflow-y: auto;
         }
         #sidebar.show {
             transform: translateX(0);
@@ -31,11 +34,8 @@
             flex-grow: 1;
             margin-left: 0;
             transition: margin-left 0.3s ease;
-            padding: 20px;
             width: 100%;
-        }
-        .main-content.with-sidebar {
-            margin-left: 280px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -171,7 +171,6 @@
     <script>
         document.getElementById('sidebarToggle').addEventListener('click', function () {
             document.getElementById('sidebar').classList.toggle('show');
-            document.querySelector('.main-content').classList.toggle('with-sidebar');
         });
     </script>
 </body>

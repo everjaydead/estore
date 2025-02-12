@@ -52,6 +52,7 @@ nav a {
     padding: 20px;
     margin: 10px;
     width: calc(25% - 40px);
+    box-sizing: border-box;
     text-align: center;
 }
 
@@ -66,6 +67,7 @@ nav a {
 .card {
     overflow: hidden;
     border-radius: 8px;
+    flex-grow: 1;
 }
 
 @media (max-width: 768px) {
