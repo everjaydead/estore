@@ -51,7 +51,7 @@ nav a {
     border-radius: 5px;
     padding: 20px;
     margin: 10px;
-    width: 200px;
+    width: calc(25% - 40px);
     text-align: center;
 }
 
@@ -69,6 +69,10 @@ nav a {
 }
 
 @media (max-width: 768px) {
+    .product {
+        width: calc(50% - 20px);
+    }
+
     .card {
         margin-bottom: 20px;
     }
@@ -118,10 +122,6 @@ footer {
 
 .year-filter label {
     margin-bottom: 5px;
-}
-
-.products {
-    margin-bottom: 20px;
 }
 
 .form-container {
