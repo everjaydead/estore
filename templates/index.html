@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Welcome to J00NE Store{% endblock %}
+{% block title %}Welcome to JOO0NE Store{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -13,7 +13,7 @@
                 <img src="{{ url_for('static', filename=product.image) }}" class="d-block w-100" alt="{{ product.name }}">
                 <div class="carousel-caption d-none d-md-block">
                     <h5>{{ product.name }}</h5>
-                    <p>KSh {{ product.price }}</p>
+                    <p>Brand: {{ product.brand }} | KSh {{ product.price }}</p>
                     <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">Shop Now</a>
                 </div>
             </div>
@@ -59,7 +59,7 @@
                     <img src="{{ url_for('static', filename=product.image) }}" class="card-img-top" alt="{{ product.name }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text">KSh {{ product.price }}</p>
+                        <p class="card-text">Brand: {{ product.brand }} | KSh {{ product.price }}</p>
                         <a href="{{ url_for('view_product', id=product.id) }}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
