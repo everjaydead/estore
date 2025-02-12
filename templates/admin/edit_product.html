@@ -7,49 +7,34 @@
     <h1>Edit Product</h1>
     <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_edit_product', id=product.id) }}">
         {{ form.hidden_tag() }}
-
-        <!-- Product Name -->
         <div class="mb-3">
             {{ form.name.label(class="form-label") }}
             {{ form.name(class="form-control") }}
         </div>
-
-        <!-- Price -->
         <div class="mb-3">
             {{ form.price.label(class="form-label") }}
             {{ form.price(class="form-control") }}
         </div>
-
-        <!-- Image -->
         <div class="mb-3">
             {{ form.image.label(class="form-label") }}
             {{ form.image(class="form-control") }}
         </div>
-
-        <!-- Brand -->
         <div class="mb-3">
             {{ form.brand.label(class="form-label") }}
             {{ form.brand(class="form-control") }}
         </div>
-
-        <!-- Category Dropdown -->
         <div class="mb-3">
             {{ form.category.label(class="form-label") }}
             {{ form.category(class="form-select") }}
         </div>
-
-        <!-- Stock -->
         <div class="mb-3">
             {{ form.stock.label(class="form-label") }}
             {{ form.stock(class="form-control") }}
         </div>
-
-        <!-- Featured Product -->
         <div class="mb-3 form-check">
             {{ form.featured.label(class="form-check-label") }}
             {{ form.featured(class="form-check-input") }}
         </div>
-
         <button type="submit" class="btn btn-primary">Update Product</button>
     </form>
 </div>

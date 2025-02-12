@@ -24,10 +24,7 @@
                             {{ "Revoke Admin" if user.is_admin else "Make Admin" }}
                         </button>
                     </form>
-                    <form action="{{ url_for('admin_edit_user', id=user.id) }}" method="GET" style="display:inline;">
-                        <button type="submit" class="btn btn-primary btn-sm">Edit</button>
-                    </form>
-                    <!-- You could add a delete option here with necessary precautions -->
+                    <a href="{{ url_for('admin_edit_user', id=user.id) }}" class="btn btn-primary btn-sm">Edit</a>
                 </td>
             </tr>
             {% endfor %}

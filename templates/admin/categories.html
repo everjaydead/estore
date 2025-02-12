@@ -5,8 +5,6 @@
 {% block content %}
 <div class="container mt-4">
     <h1>Category Management</h1>
-
-    <!-- Form to Add New Category -->
     <div class="mb-4">
         <h3>Add New Category</h3>
         <form method="POST" action="{{ url_for('admin_categories') }}">
@@ -26,8 +24,6 @@
             <button type="submit" class="btn btn-primary">Add Category</button>
         </form>
     </div>
-
-    <!-- Existing Categories List -->
     <h3>Existing Categories</h3>
     <table class="table">
         <thead>
