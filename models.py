@@ -34,7 +34,7 @@ class Product(db.Model):
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Float, nullable=False)
     image = db.Column(db.String(200), nullable=False)
-    year = db.Column(db.Integer, nullable=False)
+    brand = db.Column(db.String(120), nullable=False)
     stock = db.Column(db.Integer, nullable=False, default=0)
     featured = db.Column(db.Boolean, default=False)  # Featured field
     popularity = db.Column(db.Integer, default=0)  # Popularity field

@@ -19,9 +19,9 @@ class ProductForm(FlaskForm):
     name = StringField('Product Name', validators=[DataRequired()])
     price = DecimalField('Price', validators=[DataRequired()])
     image = StringField('Image URL', validators=[DataRequired()])
-    year = IntegerField('Year', validators=[DataRequired()])
+    brand = StringField('Brand', validators=[DataRequired()])
     category = SelectField('Category', coerce=int, validators=[DataRequired()])
-    stock = IntegerField('Stock', validators=[DataRequired()])  # Add the stock field
+    stock = IntegerField('Stock', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 class ReviewForm(FlaskForm):

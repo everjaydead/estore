@@ -565,7 +565,7 @@ def admin_add_product():
             name=form.name.data,
             price=form.price.data,
             image=form.image.data,
-            year=form.year.data,
+            brand=form.brand.data,
             category_id=form.category.data,
             stock=form.stock.data
         )
@@ -597,7 +597,7 @@ def admin_edit_product(id):
         product.name = form.name.data
         product.price = form.price.data
         product.image = form.image.data
-        product.year = form.year.data
+        product.brand = form.brand.data
         product.category_id = form.category.data
         product.stock = form.stock.data
 
