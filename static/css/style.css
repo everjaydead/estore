@@ -64,6 +64,29 @@ nav a {
     text-align: center;
 }
 
+.card-img-top {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin-top: 10px;
+}
+
+.card {
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+
+    .card-img-top {
+        height: 180px;
+        object-fit: cover;
+    }
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
