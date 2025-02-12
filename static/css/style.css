@@ -1,12 +1,12 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
 }
 
 header {
-    background-color: #333;
+    background-color: #343a40;
     color: white;
     padding: 10px 0;
     text-align: center;
@@ -22,20 +22,18 @@ header {
 }
 
 .logo img {
-    max-width: 200px;
+    max-width: 150px;
     height: auto;
     display: block;
     margin: 0 auto;
 }
 
-nav {
-    text-align: center;
+.navbar-nav .nav-link {
+    color: white;
 }
 
-nav a {
-    color: white;
-    margin: 0 10px;
-    text-decoration: none;
+.navbar-nav .nav-link:hover {
+    color: #cfcfcf;
 }
 
 .products {
@@ -51,15 +49,20 @@ nav a {
     border-radius: 5px;
     padding: 20px;
     margin: 10px;
-    width: calc(25% - 40px);
+    width: calc(25% - 20px);
     box-sizing: border-box;
     text-align: center;
+    transition: box-shadow 0.3s ease;
+}
+
+.product:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-img-top {
     width: 100%;
     height: 200px;
-    object-fit: scale-down;
+    object-fit: cover;
     background-color: #f8f9fa;
     padding: 10px;
 }
@@ -67,16 +70,14 @@ nav a {
 .card {
     overflow: hidden;
     border-radius: 8px;
-    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 @media (max-width: 768px) {
     .product {
         width: calc(50% - 20px);
-    }
-
-    .card {
-        margin-bottom: 20px;
     }
 
     .card-img-top {
@@ -107,8 +108,8 @@ th {
 footer {
     text-align: center;
     padding: 20px;
-    background-color: #f0f0f0;
-    margin-top: 20px;
+    background-color: #333;
+    color: white;
 }
 
 .year-filter {
@@ -157,16 +158,22 @@ footer {
 
 .form-container button {
     padding: 10px 15px;
-    background-color: #4CAF50;
+    background-color: #0056b3;
     color: white;
     border: none;
     border-radius: 3px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-container button:hover {
+    background-color: #004494;
 }
 
 .form-container a {
     margin-top: 10px;
     text-align: center;
+    color: #0056b3;
 }
 
 .form-container h2 {
@@ -175,7 +182,7 @@ footer {
 }
 
 .navbar-brand img {
-    margin-left: -20px;
+    margin-right: 10px;
 }
 
 .navbar-brand {
@@ -184,17 +191,17 @@ footer {
 }
 
 #sidebar .nav-link {
-    color: #333;
+    color: #ddd;
     transition: color 0.3s, background-color 0.3s;
 }
 
 #sidebar .nav-link:hover {
-    color: #0056b3;
-    background-color: #f8f9fa;
+    color: #ffffff;
+    background-color: #50575d;
 }
 
 #sidebar .border-start {
-    border-left: 2px solid #ddd;
+    border-left: 2px solid #555;
 }
 
 #sidebar .active {

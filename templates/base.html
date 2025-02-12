@@ -20,8 +20,9 @@
             left: 0;
             width: 280px;
             height: 100vh;
-            background-color: #f8f9fa;
-            box-shadow: rgba(0, 0, 0, 0.1) 2px 0 5px;
+            background-color: #343a40;
+            color: #ffffff;
+            box-shadow: rgba(0, 0, 0, 0.2) 2px 0 5px;
             transform: translateX(-280px);
             transition: transform 0.3s ease;
             z-index: 1050;
@@ -35,6 +36,8 @@
             transition: margin-left 0.3s ease;
             width: 100%;
             overflow-y: auto;
+            padding: 20px;
+            background-color: #f7f7f7;
         }
         .overlay {
             display: none;
@@ -53,11 +56,12 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
         <div class="container-fluid">
-            <button class="btn btn-secondary me-2" id="sidebarToggle">☰ Categories</button>
+            <button class="btn btn-outline-light me-2" id="sidebarToggle">☰ Categories</button>
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="J00NE Store Logo" height="30" class="d-inline-block align-text-top">
+                J00NE Store
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -173,7 +177,7 @@
         <div class="container">
             <div class="row">
                 <div class="col text-center">
-                    <p>&copy; {{ current_year }} IYF | Chelsea, Justus & Randy</p>
+                    <p>&copy; J00NE Store</p>
                 </div>
             </div>
         </div>
