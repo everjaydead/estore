@@ -13,7 +13,7 @@
                 <th>Name</th>
                 <th>Category</th>
                 <th>Price</th>
-                <th>Year</th>
+                <th>Brand</th> <!-- Updated header to reflect brand -->
                 <th>Stock</th>
                 <th>Actions</th>
             </tr>
@@ -25,7 +25,7 @@
                     <td>{{ product.name }}</td>
                     <td>{{ product.category.name if product.category else 'Uncategorized' }}</td>
                     <td>KSh {{ product.price }}</td>
-                    <td>{{ product.year }}</td>
+                    <td>{{ product.brand }}</td> <!-- Updated field to use brand -->
                     <td>{{ product.stock }}</td>
                     <td>
                         <a href="{{ url_for('admin_edit_product', id=product.id) }}" class="btn btn-warning">Edit</a>
