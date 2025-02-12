@@ -28,15 +28,6 @@ header {
     margin: 0 auto;
 }
 
-@media (max-width: 768px) {
-    .logo img {
-        max-width: 150px;
-    }
-    header {
-        flex-direction: column;
-    }
-}
-
 nav {
     text-align: center;
 }
@@ -66,9 +57,10 @@ nav a {
 
 .card-img-top {
     width: 100%;
-    height: auto;
-    object-fit: contain;
-    margin-top: 10px;
+    height: 200px;
+    object-fit: scale-down;
+    background-color: #f8f9fa;
+    padding: 10px;
 }
 
 .card {
@@ -181,7 +173,7 @@ footer {
 }
 
 .navbar-brand img {
-    margin-left: -20px; /* Move the logo closer to the edge */
+    margin-left: -20px;
 }
 
 .navbar-brand {
@@ -195,8 +187,8 @@ footer {
 }
 
 .sidebar .nav-link:hover {
-    color: #0056b3; /* Bootstrap's link-hover standard color */
-    background-color: #f8f9fa; /* Lighten background on hover */
+    color: #0056b3;
+    background-color: #f8f9fa;
 }
 
 .sidebar .border-start {
