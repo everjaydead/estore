@@ -86,6 +86,19 @@
             {% endif %}
         </div>
 
+        <!-- Featured Product -->
+        <div class="mb-3 form-check">
+            {{ form.featured.label(class="form-check-label") }}
+            {{ form.featured(class="form-check-input") }}
+            {% if form.featured.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.featured.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
         <button type="submit" class="btn btn-primary">Add Product</button>
     </form>
 </div>
