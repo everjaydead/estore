@@ -134,7 +134,10 @@ def products():
     if search_query:
         filters.append(Product.name.ilike(f'%{search_query}%'))
     if category_id is not None:
-        filters.append(Product.category_id == category_id)
+        main_category = Category.query.get(category_id)
+        if main_category:
+            all_categories = main_category.get_all_subcategories()
+            filters.append(Product.category_id.in_([cat.id for cat in all_categories]))
 
     products = Product.query.filter(*filters).all()
     categories = Category.query.all()

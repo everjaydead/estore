@@ -29,6 +29,16 @@ class Category(db.Model):
     children = db.relationship('Category', backref=db.backref('parent', remote_side=[id]), lazy='dynamic')
     products = db.relationship('Product', back_populates='category')
 
+    def get_all_subcategories(self):
+        categories = [self]
+        stack = [self]
+        while stack:
+            current_category = stack.pop()
+            children = current_category.children.all()
+            categories.extend(children)
+            stack.extend(children)
+        return categories
+
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
@@ -36,8 +46,8 @@ class Product(db.Model):
     image = db.Column(db.String(200), nullable=False)
     brand = db.Column(db.String(120), nullable=False)
     stock = db.Column(db.Integer, nullable=False, default=0)
-    featured = db.Column(db.Boolean, default=False)  # Featured field
-    popularity = db.Column(db.Integer, default=0)  # Popularity field
+    featured = db.Column(db.Boolean, default=False)
+    popularity = db.Column(db.Integer, default=0)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
 
     category = db.relationship('Category', back_populates='products')
